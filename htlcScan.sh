@@ -17,12 +17,14 @@ _CMD_LNCLI=lncli
 
 # push message to TG bot
 pushover() {
+    msg=$(echo -e "✉️ htlcScan\n$1")
     torify curl -s \
     -d parse_mode="HTML" \
-    -d text="$1" \
+    -d text="$msg" \
     -d chat_id="$CHATID" \
     https://api.telegram.org/bot$TOKEN/sendmessage > /dev/null 2>&1
 }
+
 
 # disconnect and reconnect peers
 function reconnect {
@@ -67,7 +69,7 @@ htlc_list=$(echo $listchannels | jq -r  ".channels[] | .pending_htlcs[] | select
 if [ -z "$htlc_list" ]; then
   echo "$(date "+%Y-%m-%d %H:%M:%S") no htlc(s) found with expiration < $blocks_til_expiry blocks"
   numhtlcs=$(echo $listchannels | jq -r  ".channels[] | .pending_htlcs[] | select(.expiration_height) | .hash_lock" | wc -l)
-  pushover "No critical htlcs found. Currently pending htlcs: $numhtlcs"
+  pushover "No critical htlcs found.\n$numhtlcs pending htlc(s)"
   exit 0
 fi
 
