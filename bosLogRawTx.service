@@ -1,0 +1,28 @@
+# This systemd service continuously logs raw hex values of transactions 
+# by subscribing to LND's transaction (lnservice via BoS) event listener
+# to a file. Raw hex transactions are used to republish / rebroadcast 
+# transactions to mempool in case of fast mempool congestion.
+
+
+# etc/systemd/system/bosLogRawTx.service
+[Unit]
+Description=BoS Logging Raw TXs daemon
+After=lnd.service
+
+[Service]
+ExecStart=/bin/sh -c "/home/bos/.npm-global/bin/bos call subscribeToTransactions | tee -a /home/bos/bos-lndrawtx.log"
+
+Restart=always
+TimeoutSec=120
+RestartSec=30
+
+User=bos
+Group=bos
+
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+
+[Install]
+WantedBy=multi-user.target
