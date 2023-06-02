@@ -8,6 +8,8 @@
 # Credits to @feelancer21 & @M1ch43lV for putting this together
 #
 # usage: */30 * * * * /bin/bash /home/lnd/htlcScan.sh
+#
+# version: 1.0
 
 # setup telegram bot
 TOKEN="YOURBOTTOKEN"
