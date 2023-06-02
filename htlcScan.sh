@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # This script checks for pending stuck htlcs that are near expiration height (< 13 blocks).
-# The script fetches the peers of said critical htlc and disconnects / reconnects them to
-# reestablish the htlc. Sometimes htlcs are being resolved before expiration this way and
-# thus costly force closes can be prevented.
+# It collects peers of critical htlc and disconnects / reconnects them to reestablish the
+# htlc. Sometimes htlcs are being resolved before expiration this way and thus costly
+# force closes can be prevented.
 #
 # Credits to @feelancer21 & @M1ch43lV for putting this together
 #
