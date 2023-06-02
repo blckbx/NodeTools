@@ -1,0 +1,46 @@
+# This service continuously runs in background subscribing to opening channel requests,
+# and filtering opening request by applying rules and settings.
+#
+# Some examples are explained here: 
+# https://github.com/niteshbalusu11/BOS-Commands-Document#inbound-channel-rules
+# and https://github.com/alexbosworth/balanceofsatoshis#inbound-channel-rules
+# 
+# Explanation of settings below:
+# - capacity of requested channel > 10M sats
+# - CLEARNET: peer has a cleanet address
+# - NOT(OBSOLETE): channel has to be of type anchor
+# - NOT(PUBLIC_KEY = 'x'): pubkey is not allowed to open channel to us
+# - coop-close-address(es): cycle through given addresses and add them as coop-close address to opening channels
+
+# etc/systemd/system/bos-rules.service
+[Unit]
+Description=Bos Inbound Rules daemon
+After=lnd.service
+
+[Service]
+ExecStart=/home/bos/.npm-global/bin/bos inbound-channel-rules \
+                                        --rule "CAPACITY >= 10*M" \
+                                        --rule "CLEARNET" \
+                                        --rule "NOT(OBSOLETE)" \
+                                        --rule "NOT(PUBLIC_KEY = '02...pubkey_of_peer_not_allowed')" \
+                                        --coop-close-address="bc1qx1" \
+                                        --coop-close-address="bc1qx2" \
+                                        --coop-close-address="bc1qx3" \
+                                        --coop-close-address="bc1xq4" \
+                                        --coop-close-address="bc1qx5" \
+                                        --coop-close-address="bc1qx6" 
+
+Restart=always
+TimeoutSec=120
+RestartSec=30
+
+User=bos
+Group=bos
+
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+
+[Install]
+WantedBy=multi-user.target
