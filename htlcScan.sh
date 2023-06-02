@@ -9,10 +9,11 @@
 #
 # usage: */30 * * * * /bin/bash /home/lnd/htlcScan.sh
 
+# setup telegram bot
 TOKEN="YOURBOTTOKEN"
 CHATID="YOURCHATID"
 
-blocks_til_expiry=13
+# define lncli command
 _CMD_LNCLI=lncli
 
 # push message to TG bot
@@ -61,10 +62,17 @@ function reconnect {
   fi
 }
 
+# calculate critical expiration height
+blocks_til_expiry=13
 current_block_height=$($_CMD_LNCLI getinfo | jq .block_height)
 max_expiry=$((current_block_height + blocks_til_expiry))
+
+# load channel list once
 listchannels=$($_CMD_LNCLI listchannels)
 
+# fetch pending htlcs
+# check for outgoing and incoming
+# reconnect predecessor and successor peer of critical htlcs
 htlc_list=$(echo $listchannels | jq -r  ".channels[] | .pending_htlcs[] | select(.expiration_height < $max_expiry) | .hash_lock" | sort -u)
 if [ -z "$htlc_list" ]; then
   echo "$(date "+%Y-%m-%d %H:%M:%S") no htlc(s) found with expiration < $blocks_til_expiry blocks"
