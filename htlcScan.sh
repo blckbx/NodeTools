@@ -9,7 +9,7 @@
 #
 # usage: */30 * * * * /bin/bash /home/lnd/htlcScan.sh
 #
-# version: 1.0
+# version: 1.1
 
 # setup telegram bot
 TOKEN="YOURBOTTOKEN"
