@@ -9,14 +9,15 @@
 #
 # usage: */30 * * * * /bin/bash /home/lnd/htlcScan.sh
 #
-# version: 1.1
+# version: 1.2
 
 # setup telegram bot
 TOKEN="YOURBOTTOKEN"
 CHATID="YOURCHATID"
 
 # define lncli command
-_CMD_LNCLI=lncli
+[ -f ~/.bashrc ] && source ~/.bashrc
+[ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
 
 # push message to TG bot
 pushover() {
