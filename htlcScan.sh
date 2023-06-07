@@ -89,7 +89,7 @@ for hashlock in $htlc_list; do
     #check for outgoing htlcs
     pubkey=$(echo $listchannels | jq -r ".channels[] | select(.pending_htlcs[]? | select(.hash_lock==\"$hashlock\" and .incoming==false)) | .remote_pubkey")
     if [ ! -z "$pubkey" ]; then
-      alias=$(echo $listchannels | jq -r ".channels[] | select(.remote_pubkey==\"$pubkey\" | .peer_alias")
+      alias=$(echo $listchannels | jq -r ".channels[] | select(.remote_pubkey==\"$pubkey\" | .peer_alias"))
       [[ -z "$alias" ]] && alias=$pubkey
 
       htlc_expiration_height=$(echo $listchannels | jq -r ".channels[] | .pending_htlcs[] | select(.hash_lock==\"$hashlock\" and .incoming==false) | .expiration_height")
@@ -104,7 +104,7 @@ for hashlock in $htlc_list; do
     pubkey=$(echo $listchannels | jq -r ".channels[] | select(.pending_htlcs[]? | select(.hash_lock==\"$hashlock\" and .incoming==true)) | .remote_pubkey")
 
     if [ ! -z "$pubkey" ]; then
-      alias=$(echo $listchannels | jq -r ".channels[] | select(.remote_pubkey==\"$pubkey\" | .peer_alias")
+      alias=$(echo $listchannels | jq -r ".channels[] | select(.remote_pubkey==\"$pubkey\" | .peer_alias"))
       [[ -z "$alias" ]] && alias=$pubkey
 
       htlc_expiration_height=$(echo $listchannels | jq -r ".channels[] | .pending_htlcs[] | select(.hash_lock==\"$hashlock\" and .incoming==true) | .expiration_height")
