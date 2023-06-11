@@ -15,9 +15,12 @@
 TOKEN="YOURBOTTOKEN"
 CHATID="YOURCHATID"
 
-# define lncli command
+# define lncli command - (un)comment which applies
+# bolt/blitz installation
 [ -f ~/.bashrc ] && source ~/.bashrc
 [ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
+# umbrel
+# _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec lnd lncli"
 
 # push message to TG bot
 pushover() {
