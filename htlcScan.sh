@@ -83,7 +83,7 @@ htlc_list=$(echo $listchannels | jq -r  ".channels[] | .pending_htlcs[] | select
 if [ -z "$htlc_list" ]; then
   echo "$(date "+%Y-%m-%d %H:%M:%S") no htlc(s) found with expiration < $blocks_til_expiry blocks"
   numhtlcs=$(echo $listchannels | jq -r  ".channels[] | .pending_htlcs[] | select(.expiration_height) | .hash_lock" | wc -l)
-  [[ "$numhtlcs" -ne 0 ]] && pushover "No critical htlcs found.\n$numhtlcs pending htlc(s)"
+  [[ "$numhtlcs" -gt 9 ]] && pushover "No critical htlcs found.\n$numhtlcs pending htlc(s)"
   exit 0
 fi
 
