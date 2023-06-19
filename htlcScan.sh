@@ -9,7 +9,7 @@
 #
 # usage: */30 * * * * /bin/bash /home/lnd/htlcScan.sh
 #
-# version: 1.4
+# version: 1.5
 
 # setup telegram bot
 TOKEN="YOURBOTTOKEN"
@@ -20,7 +20,7 @@ CHATID="YOURCHATID"
 [ -f ~/.bashrc ] && source ~/.bashrc
 [ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
 # umbrel
-# _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec lnd lncli"
+# _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
 
 # push message to TG bot
 pushover() {
