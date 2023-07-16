@@ -13,6 +13,18 @@ protocol.option-scid-alias=true                           pubkey routing node
 protocol.zero-conf=true
 ```
 
+Start Blixt Wallet with Tor enabled
+```
+On first start, choose settings: Enable Tor
+```
+
+Allow routing node to open zero conf channels:
+```
+Settings -> Set zero conf peers
+Enter routing node's pubkey (look up on mempool.space)
+App requires restart
+```
+
 Activate Dev Screen on Blixt Wallet:
 ```
 Settings -> Name
@@ -41,6 +53,13 @@ Move balance to Blixt side (repeat on depletion of Blixt side):
 ```
 On Blixt, create an invoice: lnbc1......
 Pay the invoice from the routing node. 
+```
+
+Disable Tor on Blixt Wallet:
+```
+Settings -> uncheck "Enable Tor"
+Restart App
+Check if lightning channel returns in state "active"
 ```
 
 Close private trusted zero conf channel:
