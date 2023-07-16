@@ -18,7 +18,7 @@ protocol.zero-conf=true
 
 Start Blixt Wallet with Tor enabled
 ```
-On first start, choose settings: Enable Tor
+On first start, choose setting: Enable Tor
 ```
 
 Allow routing node to open zero conf channels:
