@@ -44,7 +44,7 @@ Connect
 
 While connected, open private trusted zero conf channel:
 ```bash
-bos open [pubkey] \
+$ bos open [pubkey] \
         --type private-trusted \
         --avoid-broadcast \
         --set-fee-rate 1 \
@@ -55,7 +55,7 @@ bos open [pubkey] \
 Move balance to Blixt side (repeat on depletion of Blixt side):
 ```
 On Blixt, create an invoice: lnbc1......
-Pay the invoice from the routing node. 
+Pay the invoice from the routing node.
 ```
 
 Disable Tor on Blixt Wallet:
