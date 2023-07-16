@@ -1,17 +1,33 @@
 ### How to create private trusted zero-conf channels between routing node and a personal wallet app (Blixt Wallet)
 
+Overview
 ```
 ______________                                            ______________
-|            |____________________________________________|            |
+|            |............................................|            |
 |   Routing  |       private, trusted, 0conf channel      |   Blixt    |
-|    Node    |____________________________________________|   Wallet   |
+|    Node    |............................................|   Wallet   |
 |____________|                                            |____________|
 
 [protocol]                                                ChannelAcceptor - Set zero conf peers:
 protocol.option-scid-alias=true                           pubkey routing node
 protocol.zero-conf=true
 ```
-Open private trusted zero conf channel:
+
+Activate Dev Screen on Blixt Wallet:
+```
+Settings -> Name
+Set Name: Hampus
+New Setting "Go to dev screen" appears
+```
+
+Connect Blixt Wallet to Routing Node:
+```
+Scroll down dev screen to "CONNECTPEER()" button.
+Retrieve routing node infos on mobile phone via mempool.space and paste it into field above.
+Connect
+```
+
+While connected, open private trusted zero conf channel:
 ```bash
 bos open [pubkey] \
         --type private-trusted \
