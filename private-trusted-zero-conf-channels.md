@@ -7,9 +7,12 @@ ______________                                            ______________
 |   Routing  |       private, trusted, 0conf channel      |   Blixt    |
 |    Node    |............................................|   Wallet   |
 |____________|                                            |____________|
+```
 
-[protocol]                                                ChannelAcceptor - Set zero conf peers:
-protocol.option-scid-alias=true                           pubkey routing node
+Routing Node requires some necessary options set in `lnd.conf`:
+```ini
+[protocol]
+protocol.option-scid-alias=true
 protocol.zero-conf=true
 ```
 
