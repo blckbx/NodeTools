@@ -37,6 +37,12 @@ bos open [pubkey] \
         [--external-funding]
 ```
 
+Move balance to Blixt side (repeat on depletion of Blixt side):
+```
+On Blixt, create an invoice: lnbc1......
+Pay the invoice from the routing node. 
+```
+
 Close private trusted zero conf channel:
 ```bash
 # Routing Node:
