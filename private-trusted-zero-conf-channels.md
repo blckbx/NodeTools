@@ -59,7 +59,7 @@ Disable Tor on Blixt Wallet:
 ```
 Settings -> uncheck "Enable Tor"
 Restart App
-Check if lightning channel returns in state "active"
+Check if lightning channel returns to state "active"
 ```
 
 Close private trusted zero conf channel:
