@@ -1,4 +1,4 @@
-### How to create private-trusted zero-conf channels between routing node and Blixt Wallet
+### How to Create Private-Trusted Zero-Conf Channels between Routing Node and Blixt Wallet
 
 Overview
 ```
