@@ -1,4 +1,4 @@
-### How to create a private-trusted zero-conf channel between routing node and personal mobile wallet app (Blixt Wallet)
+### How to create private-trusted zero-conf channels between routing node and Blixt Wallet
 
 Overview
 ```
