@@ -21,14 +21,14 @@ Start Blixt Wallet with Tor enabled
 On first start, choose setting: Enable Tor
 ```
 
-Allow routing node to open zero conf channels:
+In Blixt Wallet, allow routing node to open zero conf channels:
 ```
 Settings -> Set zero conf peers
 Enter routing node's pubkey (look up on mempool.space)
 App requires restart
 ```
 
-Activate Dev Screen on Blixt Wallet:
+Activate Dev Screen in Blixt Wallet:
 ```
 Settings -> Name
 Set Name: Hampus
@@ -42,7 +42,9 @@ Retrieve routing node infos on mobile phone via mempool.space and paste it into 
 Connect
 ```
 
-While connected, open private trusted zero conf channel:
+Reminder: bos locks utxos for about 10 mins! If you don't have enough funds on the node, fund externally.
+
+While connected, open (e.g. 10M) private trusted zero conf channel:
 ```bash
 $ bos open [pubkey] \
         --type private-trusted \
