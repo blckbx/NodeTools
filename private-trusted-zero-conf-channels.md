@@ -24,11 +24,6 @@ protocol.option-scid-alias=true
 protocol.zero-conf=true
 ```
 
-Start Blixt Wallet with Tor enabled
-```
-On first start, choose setting: Enable Tor
-```
-
 In Blixt Wallet, allow routing node to open zero conf channels:
 ```
 Settings -> Set zero conf peers
@@ -39,8 +34,7 @@ App requires restart
 Connect Blixt Wallet to Routing Node:
 ```
 Settings -> Show Lightning Peers
-Retrieve routing node infos on mobile phone via mempool.space and paste it into field above.
-Connect
+Retrieve routing node infos on mobile phone via mempool.space, enter and connect.
 ```
 
 Reminder: bos locks utxos for about 10 mins! If you don't have enough funds on the node, fund externally.
@@ -59,13 +53,6 @@ Move balance to Blixt side (repeat on depletion of Blixt side):
 ```
 On Blixt, create an invoice: lnbc1......
 Pay the invoice from the routing node.
-```
-
-Disable Tor on Blixt Wallet:
-```
-Settings -> uncheck "Enable Tor"
-Restart App
-Check if lightning channel returns to state "active"
 ```
 
 Close private trusted zero conf channel:
