@@ -9,6 +9,14 @@ ______________                                            ______________
 |____________|                                            |____________|
 ```
 
+Requirements:
+- your own routing node
+- [LND](https://github.com/LightningNetwork/lnd) 0.15.1+ (zero-conf support)
+- [Balance of Satoshis](https://github.com/alexbosworth/balanceofsatoshis) (latest)
+- [Blixt Wallet](https://github.com/hsjoberg/blixt-wallet) (latest)
+
+____________________________
+
 Routing Node requires some necessary options set in `lnd.conf`:
 ```ini
 [protocol]
