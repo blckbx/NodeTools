@@ -39,7 +39,7 @@ Retrieve routing node infos on mobile phone via mempool.space, enter and connect
 
 Reminder: bos locks utxos for about 10 mins! If you don't have enough funds on the node, fund externally.
 
-While connected, open (e.g. 10M) private trusted zero conf channel:
+While connected, open (e.g. 10M) private trusted zero conf channel (note: set-fee-rate has to be set although tx is never broadcasted):
 ```bash
 $ bos open [pubkey] \
         --type private-trusted \
