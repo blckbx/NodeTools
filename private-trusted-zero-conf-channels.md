@@ -4,7 +4,7 @@ Overview
 ```
 ______________                                            ______________
 |            |............................................|            |
-|   Routing  |       private, trusted, 0conf channel      |   Blixt    |
+|   Routing  |       private-trusted, 0conf channel       |   Blixt    |
 |    Node    |............................................|   Wallet   |
 |____________|                                            |____________|
 ```
