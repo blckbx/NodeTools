@@ -36,16 +36,9 @@ Enter routing node's pubkey (look up on mempool.space)
 App requires restart
 ```
 
-Activate Dev Screen in Blixt Wallet:
-```
-Settings -> Name
-Set Name: Hampus
-New Setting "Go to dev screen" appears
-```
-
 Connect Blixt Wallet to Routing Node:
 ```
-Scroll down dev screen to "CONNECTPEER()" button.
+Settings -> Show Lightning Peers
 Retrieve routing node infos on mobile phone via mempool.space and paste it into field above.
 Connect
 ```
