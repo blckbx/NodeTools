@@ -1,6 +1,6 @@
 ### How to Create Private-Trusted Zero-Conf Channels between Routing Node and Blixt Wallet
 
-Overview
+#### Overview
 ```
 ______________                                            ______________
 |            |............................................|            |
@@ -16,6 +16,17 @@ Requirements:
 - [Blixt Wallet](https://github.com/hsjoberg/blixt-wallet) (latest)
 
 ____________________________
+
+#### Pros & Cons
+
+| Pros | Cons |
+|------|------|
+| More secure: no remote access to routing node required | Accounting of the node may get in trouble (fake overall balance, utxo locking) |
+| No onchain costs: channel stays unconfirmed, no (force) closing costs due to internal management | Channel Management: Refilling of depleted Blixt side has to be done manually and directly on the node by paying an invoice. careful upfront planning of necessary liquidity has to be done |
+| Non-custodial way of paying with Lightning | |
+____________________________
+
+#### Setup
 
 Routing Node requires some necessary options set in `lnd.conf`:
 ```ini
