@@ -2,11 +2,15 @@
 
 #### Overview
 ```
-______________                                            ______________
-|            |............................................|            |
-|   Routing  |       private-trusted, 0conf channel       |   Blixt    |
-|    Node    |............................................|   Wallet   |
-|____________|                                            |____________|
+Node
+     \
+       \______________                                            ______________
+Node __ |            |............................................|            |
+        |   Routing  |       private-trusted, 0conf channel       |   Blixt    |
+Node __ |    Node    |............................................|   Wallet   |
+       /|____________|                                            |____________|
+     /
+Node
 ```
 
 Requirements:
@@ -21,7 +25,7 @@ ____________________________
 
 | Pros | Cons |
 |------|------|
-| More secure: no remote access to routing node required | Accounting of the node may get in trouble (fake overall balance, utxo locking) |
+| More secure: no remote access to routing node required | Experimental: Accounting of the node may get in trouble (fake overall balance, utxo locking) |
 | No onchain costs: channel stays unconfirmed, no (force) closing costs due to internal management | Channel Management: Refilling of depleted Blixt side has to be done manually and directly on the node by paying an invoice. careful upfront planning of necessary liquidity has to be done |
 | Non-custodial way of paying with Lightning | |
 ____________________________
@@ -35,7 +39,7 @@ protocol.option-scid-alias=true
 protocol.zero-conf=true
 ```
 
-In Blixt Wallet, allow routing node to open zero conf channels:
+In Blixt Wallet, allow your Routing Node to open zero-conf channels:
 ```
 Settings -> Set zero conf peers
 Enter routing node's pubkey (lookup on mempool.space)
@@ -49,7 +53,7 @@ Lookup routing node's connection string via mempool.space, enter and connect.
 
 Reminder: bos locks utxos for about 10 mins! If you don't have enough funds on the node, fund externally.
 
-While connected, open (e.g. 10M) private trusted zero conf channel (note: set-fee-rate has to be set although tx is never broadcasted):
+While connected, open (e.g. 10M) private-trusted zero-conf channel (note: `set-fee-rate` has to be set although tx is never broadcasted):
 ```bash
 $ bos open [pubkey] \
         --type private-trusted \
@@ -59,13 +63,13 @@ $ bos open [pubkey] \
         [--external-funding]
 ```
 
-Move balance to Blixt side (repeat on depletion of Blixt side):
+Once established, move balance to Blixt side (repeat on depletion of Blixt side):
 ```
-On Blixt, create an invoice: lnbc1....
+In Blixt, create an invoice: lnbc1....
 Transfer to and pay the invoice from the routing node.
 ```
 
-Close private trusted zero conf channel:
+Close private-trusted zero-conf channel:
 ```bash
 # Routing Node:
 $ lncli abandonchannel ....
