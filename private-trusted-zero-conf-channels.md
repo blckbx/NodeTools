@@ -27,14 +27,13 @@ protocol.zero-conf=true
 In Blixt Wallet, allow routing node to open zero conf channels:
 ```
 Settings -> Set zero conf peers
-Enter routing node's pubkey (look up on mempool.space)
-App requires restart
+Enter routing node's pubkey (lookup on mempool.space)
 ```
 
 Connect Blixt Wallet to Routing Node:
 ```
 Settings -> Show Lightning Peers
-Retrieve routing node infos on mobile phone via mempool.space, enter and connect.
+Lookup routing node's connection string via mempool.space, enter and connect.
 ```
 
 Reminder: bos locks utxos for about 10 mins! If you don't have enough funds on the node, fund externally.
@@ -51,14 +50,14 @@ $ bos open [pubkey] \
 
 Move balance to Blixt side (repeat on depletion of Blixt side):
 ```
-On Blixt, create an invoice: lnbc1......
-Pay the invoice from the routing node.
+On Blixt, create an invoice: lnbc1....
+Transfer to and pay the invoice from the routing node.
 ```
 
 Close private trusted zero conf channel:
 ```bash
 # Routing Node:
-lncli abandonchannel ....
+$ lncli abandonchannel ....
 
 # Blixt Wallet:
 TBD
