@@ -51,19 +51,20 @@ Settings -> Show Lightning Peers
 Lookup routing node's connection string via mempool.space, enter and connect.
 ```
 
-Reminder: bos locks utxos for about 10 mins! If you don't have enough funds on the node, fund externally.
+Reminder: bos locks utxos for about 10 mins! If you don't have enough funds on the node, use external funding.
 
-While connected, open (e.g. 10M) private-trusted zero-conf channel (note: `set-fee-rate` has to be set although tx is never broadcasted):
+While connected, open (e.g. 10M) private-trusted zero-conf channel (note: `set-fee-rate` has to be set although tx is never broadcasted, also 9M will be moved to Blixt side on channel opening with option `--give`):
 ```bash
 $ bos open [pubkey] \
         --type private-trusted \
         --avoid-broadcast \
         --set-fee-rate 1 \
         --amount 10000000
+        --give 9000000
         [--external-funding]
 ```
 
-Once established, move balance to Blixt side (repeat on depletion of Blixt side):
+On depletion of Blixt side, :
 ```
 In Blixt, create an invoice: lnbc1....
 Transfer to and pay the invoice from the routing node.
