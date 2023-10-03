@@ -25,7 +25,7 @@ ____________________________
 
 | Pros | Cons |
 |------|------|
-| More secure: no remote access to routing node required | Experimental: Accounting of the node may get in trouble (fake overall balance, utxo locking) |
+| More secure: no remote access to routing node required | Experimental: Accounting of the node may get in trouble (fake overall balance) |
 | No onchain costs: channel stays offchain, no opening, no (force) closing costs due to completely internal channel management | Channel Management: Refilling of depleted Blixt side has to be done manually and directly on the node by paying an invoice. Careful upfront planning of necessary liquidity has to be done |
 | Non-custodial way of paying with Lightning | |
 ____________________________
