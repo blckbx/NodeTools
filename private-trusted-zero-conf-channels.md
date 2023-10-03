@@ -59,7 +59,7 @@ $ bos open [pubkey] \
         --type private-trusted \
         --avoid-broadcast \
         --set-fee-rate 1 \
-        --amount 10000000
+        --amount 10000000 \
         --give 9000000
         [--external-funding]
 ```
