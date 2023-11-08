@@ -39,7 +39,7 @@ function reconnect {
 
   output="Disconnecting:"
   ok=$(timeout 10 $_CMD_LNCLI disconnect $1 2>&1 | tr -d '[:space:]')
-  [[ "$ok" == "{}" ]] && pushover "$output Success" || pushover "$output $ok"
+  [[ "$ok" == "{}" ]] && pushover "$output Success" || pushover "$output $1 is not connected"
 
   sleep 30
 
