@@ -7,4 +7,4 @@
 - [private-trusted-zero-conf-channels](/private-trusted-zero-conf-channels.md): short overview on how to setup private-trusted zero-conf channels between a routing node (LND) and Blixt Wallet app (neutrino-backed LND mobile node w/ enabled zero-conf channel acceptor)
 
 ___________________________________
-🏆 Credits to feelancer21, M1CH43LV, RocketNodeLN, ziggie1984 and the Blitz ⚡ Gang
+🏆 Credits to feelancer21, M1CH43LV, RocketNodeLN, ziggie1984 et al.
