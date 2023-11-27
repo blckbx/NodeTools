@@ -6,11 +6,20 @@
 #use it via cronjob on a 6h basis
 #09/2023 created by @m1ch43l_m2node
 
+#example usage bolt setup
+# 0 */6 * * * /bin/bash /home/lnd/check-torpeers.sh >> /home/lnd/check-torpeers.log 2&>1
+
 #Fill personal information
 TOKEN="xxx"    # Telegram 
 CHATID="xxx"   # Telegram 
 MY_NODE_PUBKEY="xxx"
 
+# define lncli command - (un)comment which applies
+# bolt/blitz installation
+[ -f ~/.bashrc ] && source ~/.bashrc
+[ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
+# umbrel
+# _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
 
 pushover() {
     torify curl -s \
@@ -32,11 +41,11 @@ function attempt_switch_to_clearnet() {
             found_clearnet=true
             echo "Attempting to change to clearnet address $SOCKET for node https://amboss.space/node/$pubkey"
             for try in {1..5}; do
-                lncli disconnect "$pubkey"
-                lncli connect "$pubkey@$SOCKET"
+                $_CMD_LNCLI disconnect "$pubkey"
+                $_CMD_LNCLI connect "$pubkey@$SOCKET"
                 sleep 5
  
-                CURRENT_CONNECTION=$(lncli listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == $pubkey) | .address')
+                CURRENT_CONNECTION=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == $pubkey) | .address')
                 if [[ "$CURRENT_CONNECTION" != *.onion* ]]; then
                     local success_msg="Successfully connected to clearnet address $CURRENT_CONNECTION for node https://amboss.space/node/$pubkey"
                     echo "$success_msg"
@@ -63,7 +72,7 @@ function attempt_switch_to_clearnet() {
 
 OIFS=$IFS
 IFS=$'\n'
-PEER_PARTNERS=$(lncli listpeers | jq ".peers[]" -c)
+PEER_PARTNERS=$($_CMD_LNCLI listpeers | jq ".peers[]" -c)
 for PEER in $PEER_PARTNERS; do
     PEER_PUBKEY=$(echo "$PEER" | jq -r '.pub_key')
     PEER_IP=$(echo "$PEER" | jq -r '.address')
@@ -76,7 +85,7 @@ for PEER in $PEER_PARTNERS; do
  
         if ! attempt_switch_to_clearnet "$PEER_PUBKEY" "${MEMPOOL_ADDRESSES[@]}"; then
             IFS=$'\n'
-            INTERNAL_ADDRESSES=($(lncli getnodeinfo $PEER_PUBKEY | jq -r '.node.addresses[].addr'))
+            INTERNAL_ADDRESSES=($($_CMD_LNCLI getnodeinfo $PEER_PUBKEY | jq -r '.node.addresses[].addr'))
             attempt_switch_to_clearnet "$PEER_PUBKEY" "${INTERNAL_ADDRESSES[@]}"
         fi
     fi
