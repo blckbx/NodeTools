@@ -4,16 +4,16 @@
 # download this script with wget LINKTOFILE
 # assumes lncli is globally available: whereis lncli
 # execute with bash anchor_check.sh
-# For Umbrelians ☂️, add lncli alias in case you don't have it yet:
-# $ echo "alias lncli=\"/home/umbrel/umbrel/scripts/app compose lightning exec lnd lncli\"" >> ~/.bash_aliases
-# $ source ~/.bash_aliases
+# For Umbrelians ☂️, execute with bash anchor_check.sh umbrel
 
 #### One off #############################################
 # get a list of commitment fee for your peer list with this: 
 # $ lncli listchannels| jq -r '.channels | sort_by(.fee_per_kw | tonumber)[] | "\(.fee_per_kw | tonumber * 4 / 1000) sat/vb for \(.peer_alias) (\(.remote_pubkey))"' 
 # Generally a good advice to check the commitment type of your existing channels. With LND, you can get a list with
 # $ lncli listchannels | grep commitment_type
-
+# Caveat: For Umbrel ☂️, you need to have lncli as an alias: 
+# $ echo "alias lncli=\"/home/umbrel/umbrel/scripts/app compose lightning exec lnd lncli\"" >> ~/.bash_aliases
+# $ source ~/.bash_aliases
 
 if [[ $# -eq 1 && $1 == "umbrel" ]]; then
     # Set the anchor_list variable for umbrel
