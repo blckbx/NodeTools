@@ -1,7 +1,20 @@
 #!/bin/bash
 
-# Ask the user which LN system they are using
-# Check if umbrel is provided as a command-line argument
+#### GUIDE ###############################################
+# download this script with wget LINKTOFILE
+# assumes lncli is globally available: whereis lncli
+# execute with bash anchor_check.sh
+# For Umbrelians ☂️, add lncli alias in case you don't have it yet:
+# $ echo "alias lncli=\"/home/umbrel/umbrel/scripts/app compose lightning exec lnd lncli\"" >> ~/.bash_aliases
+# $ source ~/.bash_aliases
+
+#### One off #############################################
+# get a list of commitment fee for your peer list with this: 
+# $ lncli listchannels| jq -r '.channels | sort_by(.fee_per_kw | tonumber)[] | "\(.fee_per_kw | tonumber * 4 / 1000) sat/vb for \(.peer_alias) (\(.remote_pubkey))"' 
+# Generally a good advice to check the commitment type of your existing channels. With LND, you can get a list with
+# $ lncli listchannels | grep commitment_type
+
+
 if [[ $# -eq 1 && $1 == "umbrel" ]]; then
     # Set the anchor_list variable for umbrel
     anchor_list="/home/umbrel/umbrel/scripts/app compose lightning exec lnd lncli"
