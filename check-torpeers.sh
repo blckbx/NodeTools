@@ -4,7 +4,7 @@
 #If your node is connected to a peer partner via tor which offers also clearnet connection, 
 #it will try to switch to clearnet for better ping times.
 #use it via cronjob on a 6h basis
-#09/2023 created by @m1ch43l_m2node
+#09/2023 created by @m1ch43lv
 
 #example usage bolt setup
 # 0 */6 * * * /bin/bash /home/lnd/check-torpeers.sh >> /home/lnd/check-torpeers.log 2&>1
@@ -21,6 +21,7 @@ CHATID="xxx"   # Telegram
 # _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
 
 pushover() {
+    msg=$(echo -e "✉️ check-torpeers\n$1")
     torify curl -s \
     -d parse_mode="HTML" \
     -d text="$1" \
@@ -60,8 +61,8 @@ function attempt_switch_to_clearnet() {
     if [[ $found_clearnet == true ]]; then
         local fail_msg="Failed to switch to clearnet after multiple attempts for node https://amboss.space/node/$pubkey"
         echo "$fail_msg"
-        # uncomment for more TG verbosity
-        #pushover "$fail_msg"
+        # Gives you an error via TG when switching to clearnet is not possible - comment out for less TG verbosity
+        pushover "$fail_msg"
     else
         local no_clearnet_msg="No clearnet address found for node https://amboss.space/node/$pubkey"
         echo "$no_clearnet_msg"
@@ -74,12 +75,14 @@ function attempt_switch_to_clearnet() {
 OIFS=$IFS
 IFS=$'\n'
 PEER_PARTNERS=$($_CMD_LNCLI listpeers | jq ".peers[]" -c)
+TORPEERS=false
 for PEER in $PEER_PARTNERS; do
     PEER_PUBKEY=$(echo "$PEER" | jq -r '.pub_key')
     PEER_IP=$(echo "$PEER" | jq -r '.address')
  
     echo "Connected with $PEER_PUBKEY through $PEER_IP"
     if [[ "$PEER_IP" == *.onion* ]]; then
+        TORPEERS=true
         IFS=','
         MEMPOOL_NODE_INFO=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$PEER_PUBKEY")
         MEMPOOL_ADDRESSES=($(echo "$MEMPOOL_NODE_INFO" | jq -r '.sockets'))
@@ -91,5 +94,9 @@ for PEER in $PEER_PARTNERS; do
         fi
     fi
 done
-
 IFS=$OIFS
+if [[ $TORPEERS == false ]]; then
+    nothingtodo_msg="Nothing to do. All nodes connected via clearnet"
+    echo "$nothingtodo_msg"
+    pushover "$nothingtodo_msg"
+fi
