@@ -12,7 +12,6 @@
 #Fill personal information
 TOKEN="xxx"    # Telegram 
 CHATID="xxx"   # Telegram 
-MY_NODE_PUBKEY="xxx"
 
 # define lncli command - (un)comment which applies
 # bolt/blitz installation
@@ -61,11 +60,13 @@ function attempt_switch_to_clearnet() {
     if [[ $found_clearnet == true ]]; then
         local fail_msg="Failed to switch to clearnet after multiple attempts for node https://amboss.space/node/$pubkey"
         echo "$fail_msg"
-        pushover "$fail_msg"
+        # uncomment for more TG verbosity
+        #pushover "$fail_msg"
     else
         local no_clearnet_msg="No clearnet address found for node https://amboss.space/node/$pubkey"
         echo "$no_clearnet_msg"
-        pushover "$no_clearnet_msg"
+        # uncomment for more TG verbosity
+        #pushover "$no_clearnet_msg"
     fi
     return 1
 }
@@ -78,7 +79,7 @@ for PEER in $PEER_PARTNERS; do
     PEER_IP=$(echo "$PEER" | jq -r '.address')
  
     echo "Connected with $PEER_PUBKEY through $PEER_IP"
-    if [[ "$PEER_IP" == *.onion* && "$PEER_PUBKEY" != "$MY_NODE_PUBKEY" ]]; then
+    if [[ "$PEER_IP" == *.onion* ]]; then
         IFS=','
         MEMPOOL_NODE_INFO=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$PEER_PUBKEY")
         MEMPOOL_ADDRESSES=($(echo "$MEMPOOL_NODE_INFO" | jq -r '.sockets'))
