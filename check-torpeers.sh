@@ -96,7 +96,7 @@ for PEER in $PEER_PARTNERS; do
 done
 IFS=$OIFS
 if [[ $TORPEERS == false ]]; then
-    nothingtodo_msg="Nothing to do. All hybrid nodes connected via clearnet"
+    nothingtodo_msg="Nothing to do. All nodes connected via clearnet"
     echo "$nothingtodo_msg"
     pushover "$nothingtodo_msg"
 fi
