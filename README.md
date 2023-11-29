@@ -9,4 +9,4 @@
 - [checkChannelUpdates.sh](/checkChannelUpdates.sh): outputs the top 10 channels with the most updates. Additionally, it provides the total sum of updates for all channels of the node.
 
 ___________________________________
-🏆 Credits to feelancer21, M1CH43LV, RocketNodeLN, ziggie1984, TrezorHannes et al.
+🏆 Credits to feelancer21, M1CH43LV, RocketNodeLN, ziggie1984, TrezorHannes, weasel3 et al.
