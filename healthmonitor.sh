@@ -11,7 +11,7 @@
 #
 # made by @fry_aldebaran
 #
-# usage via crontab: */5 * * * * /bin/bash /home/admin/healthmonitor.shbe busy
+# usage via crontab: */5 * * * * /bin/bash /home/admin/healthmonitor.sh
 #
 # version: 2.1
 # origin date: 2023-11-28
