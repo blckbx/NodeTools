@@ -21,6 +21,7 @@
 # define btccli command
 [ -f ~/.bashrc ] && source ~/.bashrc
 [ -z "$_CMD_BTCCLI" ] && _CMD_BTCCLI=/usr/local/bin/bitcoin-cli
+[ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
 
 # setup telegram bot
 TOKEN="yourtoken"
@@ -95,4 +96,17 @@ if (( majority_blkheight - local_blkheight >= blkdiff_limit )); then
     mempoolSpaceHeight=$(curl -sSL "https://mempool.space/api/blocks/tip/height")
     pushover "WARNING: local blockheight ($local_blkheight) differs from most peers ($majority_blkheight)!\
     \nFor reference mempool.space's blockheight: $mempoolSpaceHeight"
+fi
+
+# Check LN (Lightning Network) Sync Status
+ln_sync_info=$($_CMD_LNCLI getinfo)
+synced_to_chain=$(echo "$ln_sync_info" | jq -r '.synced_to_chain')
+synced_to_graph=$(echo "$ln_sync_info" | jq -r '.synced_to_graph')
+
+if [ "$synced_to_chain" != "true" ]; then
+    pushover "WARNING: LN not synced to chain!"
+fi
+
+if [ "$synced_to_graph" != "true" ]; then
+    pushover "WARNING: LN not synced to graph!"
 fi
