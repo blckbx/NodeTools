@@ -3,7 +3,10 @@
 #### GUIDE ###############################################
 # download this script with wget LINKTOFILE
 # assumes lncli is globally available: whereis lncli
+
+#### Execute #############################################
 # execute with bash anchor_check.sh
+# To show only entries with sat/vb below N, execute with bash anchor_check.sh --filter N
 # For Umbrelians ☂️, execute with bash anchor_check.sh umbrel
 
 #### One off #############################################
@@ -22,6 +25,10 @@ else
     # Set the anchor_list variable for any other system
     anchor_list="lncli"
 fi
+
+# Limit command line filter
+# Limit shown entries with --limit 30 to only show peers with commitment < 30 sats/vbyte
+LIMIT=$2
 
 # Define the list of channels sorted by total fee_per_kw ascending
 CHANNELS=$($anchor_list listchannels | jq '.channels | sort_by(.fee_per_kw | tonumber)')
@@ -45,6 +52,10 @@ while read -r line; do
     # Calculate the sat_vbyte value
     SAT_VBYTE=$((FEE_PER_KW * 4 / 1000))
 
-    # Print the results
-    echo "$SAT_VBYTE sat/vb for $ALIAS ($PUBKEY)"
+    if [ "$SAT_VBYTE" -lt "$LIMIT" ]; then
+        # Print everything below filter limit
+        echo "$SAT_VBYTE sat/vb for $ALIAS ($PUBKEY)"
+    else
+        break
+    fi
 done <<< "$(echo "$CHANNELS" | jq -c '.[]')"
