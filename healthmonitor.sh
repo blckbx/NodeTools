@@ -7,13 +7,14 @@
 # The user is notified via the Telegram bot when any of these 
 # resources surpass predefined thresholds.
 # The script also uses bitcoin-cli to compare the local blockheight 
-# with the majority of connected peers and reports if it differs.
+# with the majority of connected peers and mempool.space's and
+# reports if it differs.
 #
 # made by @fry_aldebaran
 #
-# usage via crontab: */5 * * * * /bin/bash /home/admin/healthmonitor.shbe busy
+# usage via crontab: */5 * * * * /bin/bash /home/admin/healthmonitor.sh
 #
-# version: 2.2.0
+# version: 2.3.0
 # origin date: 2023-11-28
 # mod date: 2023-11-30
 
@@ -91,5 +92,7 @@ echo "majority peers blockheight: $majority_blkheight"
 echo "local blockheight: $local_blkheight"
 
 if (( majority_blkheight - local_blkheight >= blkdiff_limit )); then
-    pushover "WARNING: local blockheight ($local_blkheight) differs from most peers ($majority_blkheight)!"
+    mempoolSpaceHeight=$(curl -sSL "https://mempool.space/api/blocks/tip/height")
+    pushover "WARNING: local blockheight ($local_blkheight) differs from most peers ($majority_blkheight)!\
+    \nFor reference mempool.space's blockheight: $mempoolSpaceHeight"
 fi
