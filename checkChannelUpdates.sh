@@ -50,7 +50,7 @@ while read -r updates pubkey alias; do
     # Update sum variable
     total_updates=$((total_updates + updates))
 
-done < <($_CMD_LNCLI listchannels | jq -r '.channels[] | [.num_updates, .remote_pubkey, .peer_alias] | @tsv' | head -n 10 | sort -rn)
+done < <($_CMD_LNCLI listchannels | jq -r '.channels[] | [.num_updates, .remote_pubkey, .peer_alias] | @tsv' | sort -rn | head -n 10)
 
 # Output the total line
 echo "Total updates of all channels: $total_updates" | tee -pa "$log_file"
