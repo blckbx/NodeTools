@@ -30,9 +30,11 @@ echo "See logfile for the 10 most updated channels"
 
 # Empty the existing log file
 truncate -s 0 "$log_file"
-
 date >> "$log_file"
 echo "Below are the 10 channels with the most updates" >> "$log_file"
+
+# Initialize sum variable
+total_updates=0
 
 while read -r updates pubkey alias; do
 
