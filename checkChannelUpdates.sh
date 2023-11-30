@@ -35,9 +35,12 @@ echo "Below are the 10 channels with the most updates" >> "$log_file"
 
 # Initialize sum variable
 total_updates=0
+count=0
 
 while read -r updates pubkey alias; do
-
+    # Count the lines
+    ((count++))
+    
     # alias check fallback
     [[ -z "$alias" ]] && alias=$($_CMD_LNCLI getnodeinfo --pub_key \"$pubkey\" | jq -r '.node.alias')
     if [ -z "$alias" ]; then
@@ -45,12 +48,14 @@ while read -r updates pubkey alias; do
         exit 1
     fi
 
-    echo -e "$updates\t$pubkey\t$alias" >> "$log_file"
+    if [ "$count" -le 10 ]; then
+        echo -e "$updates\t$pubkey\t$alias" >> "$log_file"
+    fi
 
     # Update sum variable
     total_updates=$((total_updates + updates))
 
-done < <($_CMD_LNCLI listchannels | jq -r '.channels[] | [.num_updates, .remote_pubkey, .peer_alias] | @tsv' | sort -rn | head -n 10)
+done < <($_CMD_LNCLI listchannels | jq -r '.channels[] | [.num_updates, .remote_pubkey, .peer_alias] | @tsv' | sort -rn)
 
 # Output the total line
 echo "Total updates of all channels: $total_updates" | tee -pa "$log_file"
