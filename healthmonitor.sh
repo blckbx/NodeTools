@@ -11,11 +11,11 @@
 #
 # made by @fry_aldebaran
 #
-# usage via crontab: */5 * * * * /bin/bash /home/admin/healthmonitor.sh
+# usage via crontab: */5 * * * * /bin/bash /home/admin/healthmonitor.shbe busy
 #
-# version: 2.1
+# version: 2.2.0
 # origin date: 2023-11-28
-# mod date: 2023-11-29
+# mod date: 2023-11-30
 
 # define btccli command
 [ -f ~/.bashrc ] && source ~/.bashrc
@@ -57,14 +57,16 @@ check_resource() {
 }
 
 # Memory Usage
-mem_usage=$(free | awk '/Mem/ {printf "%.2f\n", $3/$2 * 100}')
+mem_total=$(awk '/^MemTotal/ {print $2}' /proc/meminfo)
+mem_available=$(awk '/^MemAvailable/ {print $2}' /proc/meminfo)
+mem_usage=$((100 * (mem_total - mem_available) / mem_total))
 check_resource "$mem_usage" "$mem_threshold" "Memory is $mem_usage% saturated!"
 
 # Swap Memory Usage
-swap_info=$(free | awk '/Swap/')
-swap_total=$(echo "$swap_info" | awk '{print $2}')
-if [ "$swap_total" -gt 0 ]; then
-    swap_usage=$(echo "$swap_info" | awk '{printf "%.2f\n", $3/$2 * 100}')
+swap_total=$(awk '/^SwapTotal/ {print $2}' /proc/meminfo)
+swap_free=$(awk '/^SwapFree/ {print $2}' /proc/meminfo)
+if [ "$swap_free" -gt 0 ]; then
+    swap_usage=$((100 * (swap_total - swap_free) / swap_total))
     check_resource "$swap_usage" "$swap_threshold" "Swap Memory is $swap_usage% saturated!"
 fi
 
