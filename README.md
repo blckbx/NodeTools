@@ -1,4 +1,4 @@
-💻 Node Management Scripts & Best Practices
+## 💻 Node Management Scripts & Best Practices
 
 - [htlcScan.sh](/htlcScan.sh): scans through incoming and outgoing htlcs calculating expiration heights. informs the user via telegram if there're many (>10, configurable) pending htlcs. if htlcs are about to expire (< 13 blocks away), the script disconnects both parties up and down the route and thus trying to resolve the pending htlcs.
 - [check-torpeers.sh](/check-torpeers.sh): scans through connected peers and tries to switch hybrid peers currently connected to Tor to their respective clearnet address.
