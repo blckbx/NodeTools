@@ -5,9 +5,10 @@
 #it will try to switch to clearnet for better ping times.
 #use it via cronjob on a 6h basis
 #09/2023 created by @m1ch43lv
+#Version 1.0.1
 
 #example usage bolt setup
-# 0 */6 * * * /bin/bash /home/lnd/check-torpeers.sh >> /home/lnd/check-torpeers.log 2&>1
+# 0 */6 * * * /bin/bash /home/lnd/check-torpeers.sh >> /home/lnd/check-torpeers.log 2>&1
 
 #Fill personal information
 TOKEN="xxx"    # Telegram 
@@ -24,7 +25,7 @@ pushover() {
     msg=$(echo -e "✉️ check-torpeers\n$1")
     torify curl -s \
     -d parse_mode="HTML" \
-    -d text="$1" \
+    -d text="$msg" \
     -d chat_id="$CHATID" \
     https://api.telegram.org/bot$TOKEN/sendmessage > /dev/null 2>&1
 }
@@ -40,7 +41,7 @@ function attempt_switch_to_clearnet() {
         else
             found_clearnet=true
             echo "Attempting to change to clearnet address $SOCKET for node https://amboss.space/node/$pubkey"
-            for try in {1..5}; do
+            for ((i = 1; i <= 5; i++)); do
                 $_CMD_LNCLI disconnect "$pubkey"
                 $_CMD_LNCLI connect "$pubkey@$SOCKET"
                 sleep 5
@@ -58,7 +59,7 @@ function attempt_switch_to_clearnet() {
         fi
     done
     
-    if [[ $found_clearnet == true ]]; then
+    if $found_clearnet ; then
         local fail_msg="Failed to switch to clearnet after multiple attempts for node https://amboss.space/node/$pubkey"
         echo "$fail_msg"
         # Gives you an error via TG when switching to clearnet is not possible - comment out for less TG verbosity
@@ -95,8 +96,8 @@ for PEER in $PEER_PARTNERS; do
     fi
 done
 IFS=$OIFS
-if [[ $TORPEERS == false ]]; then
-    nothingtodo_msg="Nothing to do. All nodes connected via clearnet"
+if [ !$TORPEERS ]; then
+    nothingtodo_msg="Nothing to do. All hybrid nodes connected via clearnet"
     echo "$nothingtodo_msg"
     pushover "$nothingtodo_msg"
 fi
