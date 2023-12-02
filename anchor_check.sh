@@ -52,10 +52,16 @@ while read -r line; do
     # Calculate the sat_vbyte value
     SAT_VBYTE=$((FEE_PER_KW * 4 / 1000))
 
-    if [ "$SAT_VBYTE" -lt "$LIMIT" ]; then
+    if [[ -z "$LIMIT" ]]; then
+      # LIMIT is empty, print everything
+      echo "$SAT_VBYTE sat/vb for $ALIAS ($PUBKEY)"
+    else
+      # LIMIT is not empty, proceed with filtering
+      if [ "$SAT_VBYTE" -lt "$LIMIT" ]; then
         # Print everything below filter limit
         echo "$SAT_VBYTE sat/vb for $ALIAS ($PUBKEY)"
-    else
+      else
         break
+      fi
     fi
 done <<< "$(echo "$CHANNELS" | jq -c '.[]')"
