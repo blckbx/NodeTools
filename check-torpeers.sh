@@ -161,7 +161,7 @@ done
 total_chan_count=$(($hybrid_count + $clearnet_only_count + $tor_only_count))
 count_msg="Connected: $total_chan_count - Hybrid: $hybrid_count (successful switching to clearnet: $attempt_successful_count)\
  - Clearnet-only: $clearnet_only_count - Tor-only: $tor_only_count (exit through clearnet: $tor_only_exit_clear_count)\
- - Inactive: $inactive_count (succesful reconnection: $reconnected_inactive_count)."
+ - Inactive: $inactive_count (successful reconnection: $reconnected_inactive_count)."
 echo "$count_msg"
 
 # Checking for clearnet switching
