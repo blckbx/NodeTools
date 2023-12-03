@@ -123,13 +123,13 @@ for peer in $peer_partners; do
     # Check if peer partner is hybrid (must have both: onion and clearnet address)
     if [[ "$peer_ip" == *.onion* && $num_addresses -gt 1 ]]; then
         hybrid_on_tor=true
-        # Attempt to switch to clearnet
-        if ! attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
-            # If not successful, second attempt to switch to clearnet using mempool addresses
-            IFS=','
-            mempool_node_info=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$peer_pubkey")
-            mempool_addresses=($(echo "$mempool_node_info" | jq -r '.sockets'))
-            if attempt_switch_to_clearnet "$peer_pubkey" "${mempool_addresses[@]}"; then
+        # First attempt to switch to clearnet using mempool clearnet address
+        IFS=','
+        mempool_node_info=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$peer_pubkey")
+        mempool_addresses=($(echo "$mempool_node_info" | jq -r '.sockets'))
+        if ! attempt_switch_to_clearnet "$peer_pubkey" "${mempool_addresses[@]}"; then
+            # If not successful, second attempt using internal lnd clearnet address
+            if attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
                 ((attempt_successful_count++))
             fi
         else
