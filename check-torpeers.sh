@@ -128,11 +128,13 @@ for peer in $peer_partners; do
         mempool_node_info=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$peer_pubkey")
         mempool_addresses=($(echo "$mempool_node_info" | jq -r '.sockets'))
         if ! attempt_switch_to_clearnet "$peer_pubkey" "${mempool_addresses[@]}"; then
+            IFS=$'\n'
             # If not successful, second attempt using internal lnd clearnet address
             if attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
                 ((attempt_successful_count++))
             fi
         else
+            IFS=$'\n'
             ((attempt_successful_count++))
         fi
     fi
