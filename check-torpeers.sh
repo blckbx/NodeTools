@@ -5,7 +5,7 @@
 #it will try to switch to clearnet for better ping times.
 #use it via cronjob
 #09/2023 created by @m1ch43lv
-#12/2023: Added alias output instead of pubkey, channel count,
+#12/2023: Added alias output instead of pubkey, channel count statistics,
 #         determination hybrid/clearnet/tor and
 #         inactive channels with reconnect function
 #Many thanks to @blckbx and @weasel3 for hosting, debugging and contributions
