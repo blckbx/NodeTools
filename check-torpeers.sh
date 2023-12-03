@@ -8,6 +8,7 @@
 #12/2023: Added alias output instead of pubkey, channel count,
 #         determination hybrid/clearnet/tor and
 #         inactive channels with reconnect function
+#Many thanks for hosting, debugging and contributions to @blckbx and @weasel3
 #
 #example usage bolt setup
 # 0 */3 * * * /bin/bash /home/admin/check-torpeers.sh >> /home/admin/check-torpeers.log 2>&1
