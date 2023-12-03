@@ -163,13 +163,13 @@ done
 total_chan_count=$(($hybrid_count + $clearnet_only_count + $tor_only_count))
 count_msg1="Active channels: $total_chan_count"
 echo "$count_msg1"
-count_msg2="   Hybrid nodes: $hybrid_count successfully switched to clearnet: $attempt_successful_count"
+count_msg2="   Hybrid nodes: $hybrid_count, successfully switched to clearnet: $attempt_successful_count"
 echo "$count_msg2"
 count_msg3="   Clearnet only nodes: $clearnet_only_count"
 echo "$count_msg3"
 count_msg4="   Tor only nodes: $tor_only_count (Tor exit through clearnet: $tor_only_exit_clear_count)"
 echo "$count_msg4"
-count_msg5="Inactive channels: $inactive_count successfully reconnected: $reconnected_inactive_count"
+count_msg5="Inactive channels: $inactive_count, successfully reconnected: $reconnected_inactive_count"
 echo "$count_msg5"
 count_msg=$(echo "$count_msg1\n$count_msg2\n$count_msg3\n$count_msg4\n$count_msg5\n")
 
