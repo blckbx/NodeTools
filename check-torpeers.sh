@@ -102,7 +102,7 @@ for peer in $peer_partners; do
     num_addresses=${#internal_addresses[@]}
     onion_address=$(echo "${internal_addresses[@]}" | grep -c '.onion')
 
-    # Determin which kind of node - hybrid/clearnet only/tor only
+    # Determine which kind of node - hybrid/clearnet only/tor only
     if [[ $onion_address -gt 0 && $num_addresses -gt 1 ]]; then
         ((hybrid_count++))
         echo " - Hybrid"
