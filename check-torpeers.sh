@@ -49,7 +49,7 @@ function attempt_switch_to_clearnet() {
                 $_CMD_LNCLI connect "$pubkey@$socket" > /dev/null 2>&1
                 sleep 5
 
-                current_connection=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == $pubkey) | .address')
+                current_connection=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == "$pubkey") | .address')
                 if [[ "$current_connection" != *.onion* ]]; then
                     local success_msg="Successfully connected to clearnet address $current_connection for node https://amboss.space/node/$pubkey"
                     echo "$success_msg"
@@ -159,10 +159,17 @@ done
 
 # Statistics
 total_chan_count=$(($hybrid_count + $clearnet_only_count + $tor_only_count))
-count_msg="Connected: $total_chan_count - Hybrid: $hybrid_count (successful switching to clearnet: $attempt_successful_count)\
- - Clearnet-only: $clearnet_only_count - Tor-only: $tor_only_count (exit through clearnet: $tor_only_exit_clear_count)\
- - Inactive: $inactive_count (successful reconnection: $reconnected_inactive_count)."
-echo "$count_msg"
+count_msg1="Active channels: $total_chan_count"
+echo "$count_msg1"
+count_msg2="   Hybrid nodes: $hybrid_count successfully switched to clearnet: $attempt_successful_count"
+echo "$count_msg2"
+count_msg3="   Clearnet only nodes: $clearnet_only_count"
+echo "$count_msg3"
+count_msg4="   Tor only nodes: $tor_only_count (Tor exit through clearnet: $tor_only_exit_clear_count)"
+echo "$count_msg4"
+count_msg5="Inactive channels: $inactive_count successfully reconnected: $reconnected_inactive_count"
+echo "$count_msg5"
+count_msg=$(echo "$count_msg1\n$count_msg2\n$count_msg3\n$count_msg4\n$count_msg5\n")
 
 # Checking for clearnet switching
 nothingtodo_msg=""
@@ -172,4 +179,4 @@ if ! $hybrid_on_tor; then
 fi
 
 # Reporting via Telegram
-pushover "$count_msg\n$nothingtodo_msg"
+pushover "$count_msg$nothingtodo_msg"
