@@ -10,7 +10,7 @@
 #         inactive channels with reconnect function
 #Many thanks to @blckbx and @weasel3 for hosting, debugging and contributions
 #
-#example usage bolt setup for admin userspace - change admin to lnd if you want run it in lnd userspace
+#example usage bolt setup for admin userspace - change admin to lnd if you want to run it in lnd userspace
 # 0 */3 * * * /bin/bash /home/admin/check-torpeers.sh >> /home/admin/check-torpeers.log 2>&1
 
 #Fill personal information
