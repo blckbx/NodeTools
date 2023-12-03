@@ -142,7 +142,7 @@ IFS=$OIFS
 # Get the list of public keys of inactive channels and try reconnecting by disconnecting
 inactive_count=0
 reconnected_inactive_count=0
-inactive_channels=$(lncli listchannels --inactive_only --public_only | jq -r '.channels[].remote_pubkey')
+inactive_channels=$($_CMD_LNCLI listchannels --inactive_only --public_only | jq -r '.channels[].remote_pubkey')
 for peer_pubkey in $inactive_channels; do
     node_info=$($_CMD_LNCLI getnodeinfo $peer_pubkey)
     peer_alias=$(echo $node_info | jq -r '.node.alias')
