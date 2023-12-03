@@ -24,10 +24,6 @@ CHATID="xxx"   # Telegram
 # umbrel
 # _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
 
-clearnet_only_count=0
-hybrid_node_count=0
-tor_only_count=0
-
 pushover() {
     msg=$(echo -e "✉️ check-torpeers\n$1")
     torify curl -s \
@@ -42,20 +38,20 @@ function attempt_switch_to_clearnet() {
     local addresses=($2)
     local found_clearnet=false
 
-    for SOCKET in "${addresses[@]}"; do
-        if [[ "$SOCKET" == *.onion* ]]; then
+    for socket in "${addresses[@]}"; do
+        if [[ "$socket" == *.onion* ]]; then
             continue
         else
             found_clearnet=true
-            echo "Attempting to change to clearnet address $SOCKET for node https://amboss.space/node/$pubkey"
+            echo "Attempting to change to clearnet address $socket for node https://amboss.space/node/$pubkey"
             for ((i = 1; i <= 5; i++)); do
-                $_CMD_LNCLI disconnect "$pubkey"
-                $_CMD_LNCLI connect "$pubkey@$SOCKET"
+                $_CMD_LNCLI disconnect "$pubkey" > /dev/null 2>&1
+                $_CMD_LNCLI connect "$pubkey@$socket" > /dev/null 2>&1
                 sleep 5
 
-                CURRENT_CONNECTION=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == $pubkey) | .address')
-                if [[ "$CURRENT_CONNECTION" != *.onion* ]]; then
-                    local success_msg="Successfully connected to clearnet address $CURRENT_CONNECTION for node https://amboss.space/node/$pubkey"
+                current_connection=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == $pubkey) | .address')
+                if [[ "$current_connection" != *.onion* ]]; then
+                    local success_msg="Successfully connected to clearnet address $current_connection for node https://amboss.space/node/$pubkey"
                     echo "$success_msg"
                     pushover "$success_msg"
                     return 0
@@ -80,30 +76,42 @@ function attempt_switch_to_clearnet() {
     return 1
 }
 
+
+# Main program
+
+# Initialize variables
+hybrid_on_tor=false
+hybrid_count=0
+clear_only_count=0
+tor_only_count=0
+tor_only_exit_clear_count=0
+attempt_successful_count=0
+
+# Get peer partners
 OIFS=$IFS
 IFS=$'\n'
-PEER_PARTNERS=$($_CMD_LNCLI listpeers | jq ".peers[]" -c)
-HYBRID_ON_TOR=false
-for PEER in $PEER_PARTNERS; do
-    PEER_PUBKEY=$(echo "$PEER" | jq -r '.pub_key')
-    PEER_IP=$(echo "$PEER" | jq -r '.address')
-    NODE_INFO=$($_CMD_LNCLI getnodeinfo $PEER_PUBKEY)
-    PEER_ALIAS=$(echo $NODE_INFO | jq -r '.node.alias')
-    INTERNAL_ADDRESSES=($(echo $NODE_INFO | jq -r '.node.addresses[].addr'))
+peer_partners=$($_CMD_LNCLI listpeers | jq ".peers[]" -c)
+for peer in $peer_partners; do
+    peer_pubkey=$(echo "$peer" | jq -r '.pub_key')
+    peer_ip=$(echo "$peer" | jq -r '.address')
+    node_info=$($_CMD_LNCLI getnodeinfo $peer_pubkey)
+    peer_alias=$(echo $node_info | jq -r '.node.alias')
+    internal_addresses=($(echo $node_info | jq -r '.node.addresses[].addr'))
 
-    echo -n "Connected with $PEER_ALIAS through $PEER_IP"
-    num_addresses=${#INTERNAL_ADDRESSES[@]}
-    onion_count=$(echo "${INTERNAL_ADDRESSES[@]}" | grep -c '.onion')
+    echo -n "Connected with $peer_alias through $peer_ip"
+    num_addresses=${#internal_addresses[@]}
+    onion_address=$(echo "${internal_addresses[@]}" | grep -c '.onion')
 
-    if [[ $onion_count -gt 0 && $num_addresses -gt 1 ]]; then
-        ((hybrid_node_count++))
+    # Determin which kind of node - hybrid/clearnet only/tor only
+    if [[ $onion_address -gt 0 && $num_addresses -gt 1 ]]; then
+        ((hybrid_count++))
         echo " - Hybrid"
-    elif [[ $onion_count -gt 0 ]]; then
-        ((tor_only_count ++))
+    elif [[ $onion_address -gt 0 ]]; then
+        ((tor_only_count++))
         echo -n " - Tor only"
         # Check if the address is IPv4
-        if echo "$PEER_IP" | grep -qP '^\d{1,3}(\.\d{1,3}){3}'; then
-            ((tor_only_exit_clear++))
+        if echo "$peer_ip" | grep -qP '^\d{1,3}(\.\d{1,3}){3}'; then
+            ((tor_only_exit_clear_count++))
             echo -n " with clearnet exit"
         fi
         echo ""
@@ -112,45 +120,56 @@ for PEER in $PEER_PARTNERS; do
         echo " - Clearnet only"
     fi
 
-    # Check if the node has both onion and clearnet addresses
-    if [[ "$PEER_IP" == *.onion* && $num_addresses -gt 1 ]]; then
-        HYBRID_ON_TOR=true
-        # Attempt switch to clearnet for hybrid nodes
-        if ! attempt_switch_to_clearnet "$PEER_PUBKEY" "${INTERNAL_ADDRESSES[@]}"; then
-            # If not successful, attempt to switch to clearnet via mempool addresses
+    # Check if peer partner is hybrid (must have both: onion and clearnet address)
+    if [[ "$peer_ip" == *.onion* && $num_addresses -gt 1 ]]; then
+        hybrid_on_tor=true
+        # Attempt to switch to clearnet
+        if ! attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
+            # If not successful, second attempt to switch to clearnet using mempool addresses
             IFS=','
-            MEMPOOL_NODE_INFO=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$PEER_PUBKEY")
-            MEMPOOL_ADDRESSES=($(echo "$MEMPOOL_NODE_INFO" | jq -r '.sockets'))
-            attempt_switch_to_clearnet "$PEER_PUBKEY" "${MEMPOOL_ADDRESSES[@]}"
+            mempool_node_info=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$peer_pubkey")
+            mempool_addresses=($(echo "$mempool_node_info" | jq -r '.sockets'))
+            if attempt_switch_to_clearnet "$peer_pubkey" "${mempool_addresses[@]}"; then
+                ((attempt_successful_count++))
+            fi
+        else
+            ((attempt_successful_count++))
         fi
     fi
 done
 IFS=$OIFS
 
-# Get the list of public keys of inactive channels
-inactive_channels_count=0
-reconnected_inactive_channels_count=0
+# Get the list of public keys of inactive channels and try reconnecting by disconnecting
+inactive_count=0
+reconnected_inactive_count=0
 inactive_channels=$(lncli listchannels --inactive_only --public_only | jq -r '.channels[].remote_pubkey')
-for PEER_PUBKEY in $inactive_channels; do
-    NODE_INFO=$($_CMD_LNCLI getnodeinfo $PEER_PUBKEY)
-    PEER_ALIAS=$(echo $NODE_INFO | jq -r '.node.alias')
-    echo -n "Inactive channel with $PEER_ALIAS - Trying to recover by disconnecting: "
-    lncli disconnect $PEER_PUBKEY >/dev/null 2>&1
+for peer_pubkey in $inactive_channels; do
+    node_info=$($_CMD_LNCLI getnodeinfo $peer_pubkey)
+    peer_alias=$(echo $node_info | jq -r '.node.alias')
+    echo -n "Inactive channel with $peer_alias - Trying to recover by disconnecting: "
+    lncli disconnect $peer_pubkey >/dev/null 2>&1
     if [[ $? -eq 0 ]]; then
         echo "Success"
-        ((reconnected_inactive_channels_count++))
+        ((reconnected_inactive_count++))
     else
         echo "Failed"
-        ((inactive_channels_count++))
+        ((inactive_count++))
     fi
 done
 
-total_count=$(($hybrid_node_count + $clearnet_only_count + $tor_only_count))
-count_msg="Inactive: $inactive_channels_count (reconnect success: $reconnected_inactive_channels_count) - Connected: $total_count - Hybrid: $hybrid_node_count - Clearnet-only: $clearnet_only_count - Tor-only: $tor_only_count (with clearnet exit: $tor_only_exit_clear)"
+# Statistics
+total_chan_count=$(($hybrid_count + $clearnet_only_count + $tor_only_count))
+count_msg="Connected: $total_chan_count - Hybrid: $hybrid_count (successful switching to clearnet: $attempt_successful_count)\
+ - Clearnet-only: $clearnet_only_count - Tor-only: $tor_only_count (exit through clearnet: $tor_only_exit_clear_count)\
+ - Inactive: $inactive_count (succesful reconnection: $reconnected_inactive_count)."
 echo "$count_msg"
-$nothingtodo_msg=""
-if [ !$HYBRID_ON_TOR ]; then
-    nothingtodo_msg="Nothing to do. All hybrid nodes on Clearnet."
+
+# Checking for clearnet switching
+nothingtodo_msg=""
+if ! $hybrid_on_tor; then
+    nothingtodo_msg="Nothing to do, all hybrid nodes on Clearnet."
     echo "$nothingtodo_msg"
 fi
-pushover "$count_msg $nothingtodo_msg"
+
+# Reporting via Telegram
+pushover "$count_msg\n$nothingtodo_msg"
