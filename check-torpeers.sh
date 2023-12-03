@@ -147,7 +147,7 @@ for peer_pubkey in $inactive_channels; do
     node_info=$($_CMD_LNCLI getnodeinfo $peer_pubkey)
     peer_alias=$(echo $node_info | jq -r '.node.alias')
     echo -n "Inactive channel with $peer_alias - Trying to recover by disconnecting: "
-    lncli disconnect $peer_pubkey >/dev/null 2>&1
+    $_CMD_LNCLI disconnect $peer_pubkey >/dev/null 2>&1
     if [[ $? -eq 0 ]]; then
         echo "Success"
         ((reconnected_inactive_count++))
