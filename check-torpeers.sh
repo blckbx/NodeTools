@@ -24,6 +24,9 @@ CHATID="xxx"   # Telegram
 # umbrel
 # _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
 
+# define timeout of disconnecting and reconnecting to peers
+timeout_sec=20
+
 pushover() {
     msg=$(echo -e "✉️ check-torpeers\n$1")
     torify curl -s \
@@ -34,46 +37,60 @@ pushover() {
 }
 
 function attempt_switch_to_clearnet() {
-    local pubkey=$1
+    local pubkey="$1"
     local addresses=($2)
-    local found_clearnet=false
+    # Allow to interrupt script during timeout
+    trap "echo 'Script interrupted'; exit" SIGINT
 
     for socket in "${addresses[@]}"; do
         if [[ "$socket" == *.onion* ]]; then
             continue
         else
-            found_clearnet=true
-            echo "Attempting to change to clearnet address $socket for node https://amboss.space/node/$pubkey"
-            for ((i = 1; i <= 5; i++)); do
-                timeout 10 $_CMD_LNCLI disconnect "$pubkey"
-                timeout 10 $_CMD_LNCLI connect "$pubkey@$socket"
-                sleep 10
+            onion_address=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == $pubkey) | .address')
+            echo "Retry #1"
+            for ((i = 1; i <= 3; i++)); do
+                echo "Disconnecting $pubkey"
+                timeout $timeout_sec $_CMD_LNCLI disconnect "$pubkey"
+                if [ $? -eq 124 ]; then
+                    echo "Timeout occurred while trying to disconnect"
+                fi
+                echo "Connecting to $pubkey@$socket"
+                timeout $timeout_sec $_CMD_LNCLI connect "$pubkey@$socket"
+                if [ $? -eq 124 ]; then
+                    echo "Timeout occurred while trying to connect"
+                fi
 
-                current_connection=$($_CMD_LNCLI listpeers | jq -r '.peers[] | select(.pub_key == "$pubkey") | .address')
-                echo "Checking for new address: $current_connection"
-                if [[ "$current_connection" != *.onion* ]]; then
-                    local success_msg="Successfully connected to clearnet address $current_connection for node https://amboss.space/node/$pubkey"
+                current_address=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == $pubkey) | .address')
+                echo -n "Checking connection... new address returned from listpeers: "
+                if [[ -z "$current_address" ]]; then
+                    echo "<EMPTY>"
+                else
+                    echo "$current_address"
+                fi
+                if [[ -n "$current_address" && "$current_address" != *.onion* ]]; then
+                    local success_msg="Successfully connected to $current_address for node https://amboss.space/node/$pubkey"
                     echo "$success_msg"
                     pushover "$success_msg"
                     return 0
-                else
+                elif [[ -z "$current_address" && $i -lt 3 ]]; then
+                    echo "Retry #$(($i + 1))"
+                    sleep 2
+                elif [[ $i -lt 3 ]]; then
+                    echo "Retry #$(($i + 1))"
                     sleep 2
                 fi
             done
+            # In case of unsuccessful clearnet connection reconnect to Tor to avoid inactive channel state
+            if [[ -z "$current_address" ]]; then
+                echo "Restoring Tor connection to $onion_address"
+                timeout $timeout_sec $_CMD_LNCLI connect "$pubkey@$onion_address"
+                if [ $? -eq 124 ]; then
+                    echo "Timeout occurred while trying to connect to $pubkey@$onion_address"
+                fi
+            fi
         fi
     done
 
-    if $found_clearnet ; then
-        local fail_msg="Failed to switch to clearnet after multiple attempts for node https://amboss.space/node/$pubkey"
-        echo "$fail_msg"
-        # Gives you an error via TG when switching to clearnet is not possible - comment out for less TG verbosity
-        pushover "$fail_msg"
-    else
-        local no_clearnet_msg="No clearnet address found for node https://amboss.space/node/$pubkey"
-        echo "$no_clearnet_msg"
-        # uncomment for more TG verbosity
-        #pushover "$no_clearnet_msg"
-    fi
     return 1
 }
 
@@ -128,11 +145,37 @@ for peer in $peer_partners; do
         IFS=','
         mempool_node_info=$(curl -s "https://mempool.space/api/v1/lightning/nodes/$peer_pubkey")
         mempool_addresses=($(echo "$mempool_node_info" | jq -r '.sockets'))
+        echo "First attempt using mempool clearnet address"
         if ! attempt_switch_to_clearnet "$peer_pubkey" "${mempool_addresses[@]}"; then
             IFS=$'\n'
-            # If not successful, second attempt using internal lnd clearnet address
-            if attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
-                ((attempt_successful_count++))
+            attempt_successful=false
+
+            # Compare mempool_addresses with internal_addresses
+            match_found=false
+            for mempool_addr in "${mempool_addresses[@]}"; do
+                for internal_addr in "${internal_addresses[@]}"; do
+                    if [[ "$mempool_addr" == "$internal_addr" ]]; then
+                        match_found=true
+                        break 2 # Exit both loops
+                    fi
+                done
+            done
+
+            # If no match found, proceed to second attempt
+            if [ "$match_found" = false ]; then
+                echo "Second attempt using internal lnd clearnet address"
+                if attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
+                    ((attempt_successful_count++))
+                    attempt_successful=true
+                fi
+            else
+                echo "No second attempt - mempool address matches internal address of lnd: $mempool_addr"
+            fi
+            if ! $attempt_successful; then
+                fail_msg="Failed to switch to clearnet after multiple attempts for hybrid node https://amboss.space/node/$peer_pubkey"
+                echo "$fail_msg"
+                # Gives you an error via TG when switching to clearnet is not possible - comment out for less TG verbosity
+                pushover "$fail_msg"
             fi
         else
             IFS=$'\n'
