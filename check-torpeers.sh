@@ -45,18 +45,19 @@ function attempt_switch_to_clearnet() {
             found_clearnet=true
             echo "Attempting to change to clearnet address $socket for node https://amboss.space/node/$pubkey"
             for ((i = 1; i <= 5; i++)); do
-                $_CMD_LNCLI disconnect "$pubkey" > /dev/null 2>&1
-                $_CMD_LNCLI connect "$pubkey@$socket" > /dev/null 2>&1
-                sleep 5
+                timeout 10 $_CMD_LNCLI disconnect "$pubkey"
+                timeout 10 $_CMD_LNCLI connect "$pubkey@$socket"
+                sleep 10
 
-                current_connection=$($_CMD_LNCLI listpeers | jq -r --arg pubkey "$pubkey" '.peers[] | select(.pub_key == "$pubkey") | .address')
+                current_connection=$($_CMD_LNCLI listpeers | jq -r '.peers[] | select(.pub_key == "$pubkey") | .address')
+                echo "Checking for new address: $current_connection"
                 if [[ "$current_connection" != *.onion* ]]; then
                     local success_msg="Successfully connected to clearnet address $current_connection for node https://amboss.space/node/$pubkey"
                     echo "$success_msg"
                     pushover "$success_msg"
                     return 0
                 else
-                    sleep 5
+                    sleep 2
                 fi
             done
         fi
