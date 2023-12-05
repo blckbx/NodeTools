@@ -33,9 +33,9 @@ fi
 
 # Set the anchor_list variable based on --umbrel option
 if [[ $# -eq 1 && $1 == "--umbrel" ]]; then
-    anchor_list="/home/umbrel/umbrel/scripts/app compose lightning exec lnd lncli"
+    anchor_list="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
 else
-    anchor_list="lncli"
+    anchor_list="/usr/local/bin/lncli"
 fi
 
 
