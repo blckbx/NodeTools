@@ -26,8 +26,8 @@ if [[ $1 == "--help" || $1 == "-h" ]]; then
 fi
 
 # Check if both --type and --filter options are provided
-if [[ $1 == "--type" && $3 == "--filter" ]]; then
-    echo "Error: Only one of --type or --filter can be used at a time."
+if [[ "$*" =~ "--type" && "$*" =~ "--limit" ]]; then
+    echo "Error: Only one of --type or --limit can be used at a time."
     exit 1
 fi
 
