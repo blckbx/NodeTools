@@ -205,7 +205,7 @@ done
 
 # Statistics
 total_chan_count=$(($hybrid_count + $clearnet_only_count + $tor_only_count))
-count_msg1="Active channels: $total_chan_count"
+count_msg1="Connected nodes: $total_chan_count"
 echo "$count_msg1"
 count_msg2="   Hybrid nodes: $hybrid_count, successfully switched to clearnet: $attempt_successful_count"
 echo "$count_msg2"
