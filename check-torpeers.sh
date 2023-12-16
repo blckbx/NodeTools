@@ -238,7 +238,7 @@ for peer_pubkey in $inactive_channels; do
         echo "Reconnecting inactive channel failed"
         ((inactive_count++))
     else
-        echo "Reconnecting inactive channel succesful"
+        echo "Reconnecting inactive channel successful"
         ((reconnected_inactive_count++))
     fi
 done
