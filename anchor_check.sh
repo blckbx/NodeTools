@@ -14,7 +14,7 @@ DESCRIPTION:
 OPTIONS:
    --peer value"$'\t\t'"limit to only one specific pubkey
    --limit value"$'\t'"Show commitment-fee below specific limit
-   --type string"$'\t\t'"filter by 'anchors' or 'static' output only
+   --type string"$'\t'"filter by 'anchors' or 'static' output only
    --umbrel"$'\t\t'"adjust lncli since ☂️ needs a different command call
    -h, --help"$'\t\t'"Show this help message
 "
