@@ -45,6 +45,7 @@ get_channel_info() {
     ALIAS=$(echo "$CHANNEL_INFO" | jq -r '.peer_alias')
     FEE_PER_KW=$(echo "$CHANNEL_INFO" | jq -r '.fee_per_kw')
     ANCHOR=$(echo "$CHANNEL_INFO" | jq -r '.commitment_type')
+    INITIATOR=$(echo "$CHANNEL_INFO" | jq -r '.initiator')
     if [[ "$ANCHOR" == "ANCHORS" ]]; then
         ANCHOR="⚓Anchors"
     elif [[ "$ANCHOR" == "STATIC_REMOTE_KEY" ]]; then
@@ -75,7 +76,7 @@ if [[ $1 == "--peer" ]]; then
     SAT_VBYTE=$((FEE_PER_KW * 4 / 1000))
 
     # Print SAT_VBYTE value
-    echo "$ANCHOR $SAT_VBYTE sat/vb "$'\t'" $ALIAS ($PUBKEY)"
+    echo "$INITIATOR $ANCHOR $SAT_VBYTE sat/vb "$'\t'" $ALIAS ($PUBKEY)"
 
 else
     # Check if --type option is provided
@@ -99,11 +100,13 @@ else
 
     # Loop through each channel and extract the pubkey and fee_per_kw values
     echo "$CHANNELS" | while read -r line; do
-        # Extract the fee_per_kw, remote_pubkey, and peer_alias values
+        # Extract the fee_per_kw, remote_pubkey, and peer_alias values.
+	# Test to show initiator, too
         FEE_PER_KW=$(echo "$line" | jq -r '.fee_per_kw')
         PUBKEY=$(echo "$line" | jq -r '.remote_pubkey')
         ALIAS=$(echo "$line" | jq -r '.peer_alias')
         ANCHOR=$(echo "$line" | jq -r '.commitment_type')
+	INITIATOR=$(echo "$line" | jq -r '.initiator')
 
         if [[ -n "$TYPE" && "$ANCHOR" != "$TYPE" ]]; then
             continue
@@ -123,12 +126,12 @@ else
 
         if [[ -z "$LIMIT" ]]; then
             # LIMIT is empty, print everything
-            echo "$ANCHOR_EMOJI $SAT_VBYTE sat/vb "$'\t'" $ALIAS ($PUBKEY)"
+            echo "$INITIATOR $ANCHOR_EMOJI $SAT_VBYTE sat/vb "$'\t'" $ALIAS ($PUBKEY)"
         else
             # LIMIT is not empty, proceed with filtering
             if [ "$SAT_VBYTE" -lt "$LIMIT" ]; then
                 # Print everything below filter limit
-                echo "$ANCHOR_EMOJI $SAT_VBYTE sat/vb "$'\t'" $ALIAS ($PUBKEY)"
+                echo "$INITIATOR $ANCHOR_EMOJI $SAT_VBYTE sat/vb "$'\t'" $ALIAS ($PUBKEY)"
             else
                 break
             fi
