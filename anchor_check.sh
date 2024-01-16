@@ -14,8 +14,14 @@ DESCRIPTION:
 OPTIONS:
    --peer value"$'\t\t'"limit to only one specific pubkey
    --limit value"$'\t'"Show commitment-fee below specific limit
+<<<<<<< HEAD
    --type string"$'\t'"filter by 'anchors' or 'static' output only
    --umbrel"$'\t\t'"adjust lncli since ☂️ needs a different command call
+=======
+   --type string"$'\t\t'"filter by 'anchors' or 'static' output only
+   --umbrel"$'\t\t'"adjust lncli since ☂ needs a different command call
+   --btcpay"$'\t\t'"adjust lncli for BTCPay Server Docker environment
+>>>>>>> e33168d (Update anchor_check.sh)
    -h, --help"$'\t\t'"Show this help message
 "
 
@@ -25,19 +31,14 @@ if [[ $1 == "--help" || $1 == "-h" ]]; then
     exit 0
 fi
 
-# Check if both --type and --filter options are provided
-if [[ "$*" =~ "--type" && "$*" =~ "--limit" ]]; then
-    echo "Error: Only one of --type or --limit can be used at a time."
-    exit 1
-fi
-
-# Set the anchor_list variable based on --umbrel option
-if [[ $# -eq 1 && $1 == "--umbrel" ]]; then
+# Set the anchor_list variable based on --umbrel or --btcpay option
+if [[ $# -gt 0 && $1 == "--umbrel" ]]; then
     anchor_list="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
+elif [[ $# -gt 0 && $1 == "--btcpay" ]]; then
+    anchor_list="docker exec btcpayserver_lnd_bitcoin lncli --macaroonpath /root/.lnd/admin.macaroon"
 else
     anchor_list="/usr/local/bin/lncli"
 fi
-
 
 get_channel_info() {
     local CHANNEL_INFO=$1
@@ -49,7 +50,7 @@ get_channel_info() {
     if [[ "$ANCHOR" == "ANCHORS" ]]; then
         ANCHOR="⚓Anchors"
     elif [[ "$ANCHOR" == "STATIC_REMOTE_KEY" ]]; then
-        ANCHOR="⚠️  Static"
+        ANCHOR="⚠  Static"
     else
         ANCHOR="🥪??"
     fi
@@ -81,7 +82,8 @@ if [[ $1 == "--peer" ]]; then
 else
     # Check if --type option is provided
     if [[ $1 == "--type" ]]; then
-        if [[ $2 == "anchors" ]]; then
+        if
+[[ $2 == "anchors" ]]; then
             TYPE="ANCHORS"
         elif [[ $2 == "static" ]]; then
             TYPE="STATIC_REMOTE_KEY"
@@ -116,7 +118,7 @@ else
         if [[ "$ANCHOR" == "ANCHORS" ]]; then
             ANCHOR_EMOJI="⚓Anchors"
         elif [[ "$ANCHOR" == "STATIC_REMOTE_KEY" ]]; then
-            ANCHOR_EMOJI="⚠️  Static"
+            ANCHOR_EMOJI="⚠  Static"
         else
             ANCHOR_EMOJI="🥪"
         fi
