@@ -9,4 +9,4 @@
 - [checkChannelUpdates.sh](/checkChannelUpdates.sh): outputs the top 10 channels with the most updates. Additionally, it provides the total sum of all state updates of the node.
 - [healthmonitor.sh](/healthmonitor.sh): monitors system resource usage and sends warnings to Telegram if specific thresholds are exceeded. It checks the usage of memory, swap memory, disk storage and long-term CPU usage (15-minutes average). The user is notified via Telegram bot when any of these resources surpass predefined thresholds. The script also uses `bitcoin-cli` to compare the local blockheight with the majority of connected peers and reports any deviation.
 ___________________________________
-🏆 Credits to feelancer21, M1CH43LV, RocketNodeLN, ziggie1984, TrezorHannes, weasel3 et al.
+🏆 Credits to feelancer21, M1CH43LV, RocketNodeLN, ziggie1984, TrezorHannes, weasel3, warioishere et al.
