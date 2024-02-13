@@ -96,6 +96,7 @@ else
     CHANNELS=$($anchor_list listchannels | jq -c '.channels | sort_by(.fee_per_kw | tonumber)[]')
 
     # Loop through each channel and extract the pubkey and fee_per_kw values
+    echo "Opener | Type | Commit "$'\t\t'" Alias "$'\t\t'" (Pubkey)"
     echo "$CHANNELS" | while read -r line; do
         # Extract the fee_per_kw, remote_pubkey, and peer_alias values.
 	# Test to show initiator, too
