@@ -14,14 +14,9 @@ DESCRIPTION:
 OPTIONS:
    --peer value"$'\t\t'"limit to only one specific pubkey
    --limit value"$'\t'"Show commitment-fee below specific limit
-<<<<<<< HEAD
-   --type string"$'\t'"filter by 'anchors' or 'static' output only
-   --umbrel"$'\t\t'"adjust lncli since ☂️ needs a different command call
-=======
    --type string"$'\t\t'"filter by 'anchors' or 'static' output only
    --umbrel"$'\t\t'"adjust lncli since ☂ needs a different command call
    --btcpay"$'\t\t'"adjust lncli for BTCPay Server Docker environment
->>>>>>> e33168d (Update anchor_check.sh)
    -h, --help"$'\t\t'"Show this help message
 "
 
