@@ -77,8 +77,7 @@ if [[ $1 == "--peer" ]]; then
 else
     # Check if --type option is provided
     if [[ $1 == "--type" ]]; then
-        if
-[[ $2 == "anchors" ]]; then
+        if [[ $2 == "anchors" ]]; then
             TYPE="ANCHORS"
         elif [[ $2 == "static" ]]; then
             TYPE="STATIC_REMOTE_KEY"
