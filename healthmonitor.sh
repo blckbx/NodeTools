@@ -24,8 +24,9 @@
 [ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
 
 # setup telegram bot
-TOKEN="yourtoken"
-CHATID="yourid"
+source ./config.cfg
+TOKEN="$TOKEN"
+CHATID="$CHATID"
 
 # thresholds for Telegram-notification in percent
 mem_threshold=90

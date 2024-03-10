@@ -12,8 +12,9 @@
 # version: 1.5
 
 # setup telegram bot
-TOKEN="YOURBOTTOKEN"
-CHATID="YOURCHATID"
+source ./config.cfg
+TOKEN="$TOKEN"
+CHATID="$CHATID"
 
 # define lncli command - (un)comment which applies
 # bolt/blitz installation

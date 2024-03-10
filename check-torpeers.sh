@@ -18,8 +18,9 @@
 # 0 */3 * * * /bin/bash /home/admin/check-torpeers.sh >> /home/admin/check-torpeers.log 2>&1
 
 #Fill personal Telegram information
-TOKEN="xxx"
-CHATID="xxx"
+source ./config.cfg
+TOKEN="$TOKEN"
+CHATID="$CHATID"
 
 # define lncli command - (un)comment which applies
 # bolt/blitz installation
