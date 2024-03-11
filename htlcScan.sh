@@ -12,9 +12,22 @@
 # version: 1.5
 
 # setup telegram bot
-source ./config.cfg
-TOKEN="$TOKEN"
-CHATID="$CHATID"
+# Check if the config file exists
+script_path=$(dirname "$0")
+if [ -f "$script_path/config.cfg" ]; then
+    # Source the config file if it exists
+    echo "Good: config.cfg was found, using this one."
+    source $script_path/config.cfg
+else
+    # Use default values if the config file is missing
+    echo "Warning: config.cfg not found. Using default values."
+    TOKEN="5546204089:AAGq4baCLw8WXVpYd7b9A7Ksl0AOuNvk5uU" 
+    CHATID="-1001720804634" 
+fi
+
+echo "Script started"
+# notify me if limit of pending HTLCs > X
+NOTIFYLIMIT=10
 
 # define lncli command - (un)comment which applies
 # bolt/blitz installation
@@ -84,7 +97,7 @@ htlc_list=$(echo $listchannels | jq -r  ".channels[] | .pending_htlcs[] | select
 if [ -z "$htlc_list" ]; then
   echo "$(date "+%Y-%m-%d %H:%M:%S") no htlc(s) found with expiration < $blocks_til_expiry blocks"
   numhtlcs=$(echo $listchannels | jq -r  ".channels[] | .pending_htlcs[] | select(.expiration_height) | .hash_lock" | wc -l)
-  [[ "$numhtlcs" -gt 9 ]] && pushover "No critical htlcs found.\n$numhtlcs pending htlc(s)"
+  [[ "$numhtlcs" -gt $NOTIFYLIMIT ]] && pushover "No critical htlcs found.\n$numhtlcs pending htlc(s)"
   exit 0
 fi
 
