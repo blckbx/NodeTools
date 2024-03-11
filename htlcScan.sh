@@ -16,16 +16,14 @@
 script_path=$(dirname "$0")
 if [ -f "$script_path/config.cfg" ]; then
     # Source the config file if it exists
-    echo "Good: config.cfg was found, using this one."
     source $script_path/config.cfg
 else
     # Use default values if the config file is missing
     echo "Warning: config.cfg not found. Using default values."
-    TOKEN="5546204089:AAGq4baCLw8WXVpYd7b9A7Ksl0AOuNvk5uU" 
-    CHATID="-1001720804634" 
+    TOKEN="YOUR_DEFAULT_TOKEN" 
+    CHATID="YOUR_DEFAULT_CHATID" 
 fi
 
-echo "Script started"
 # notify me if limit of pending HTLCs > X
 NOTIFYLIMIT=10
 
