@@ -24,8 +24,17 @@
 [ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
 
 # setup telegram bot
-TOKEN="yourtoken"
-CHATID="yourid"
+# Check if the config file exists
+script_path=$(dirname "$0")
+if [ -f "$script_path/config.cfg" ]; then
+    # Source the config file if it exists
+    source $script_path/config.cfg
+else
+    # Use default values if the config file is missing
+    echo "Warning: config.cfg not found. Using default values."
+    TOKEN="YOUR_DEFAULT_TOKEN" 
+    CHATID="YOUR_DEFAULT_CHATID" 
+fi
 
 # thresholds for Telegram-notification in percent
 mem_threshold=90

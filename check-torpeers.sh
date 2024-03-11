@@ -17,9 +17,18 @@
 #example usage bolt setup for admin userspace -change admin to lnd if you want to run it for lnd userspace
 # 0 */3 * * * /bin/bash /home/admin/check-torpeers.sh >> /home/admin/check-torpeers.log 2>&1
 
-#Fill personal Telegram information
-TOKEN="xxx"
-CHATID="xxx"
+# setup telegram bot
+# Check if the config file exists
+script_path=$(dirname "$0")
+if [ -f "$script_path/config.cfg" ]; then
+    # Source the config file if it exists
+    source $script_path/config.cfg
+else
+    # Use default values if the config file is missing
+    echo "Warning: config.cfg not found. Using default values."
+    TOKEN="YOUR_DEFAULT_TOKEN" 
+    CHATID="YOUR_DEFAULT_CHATID" 
+fi
 
 # define lncli command - (un)comment which applies
 # bolt/blitz installation
