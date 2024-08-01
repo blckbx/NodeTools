@@ -14,9 +14,10 @@ DESCRIPTION:
 OPTIONS:
    --peer value"$'\t\t'"limit to only one specific pubkey
    --limit value"$'\t'"Show commitment-fee below specific limit
-   --type string"$'\t\t'"filter by 'anchors' or 'static' output only
+   --type string"$'\t'"filter by 'anchors' or 'static' output only
    --umbrel"$'\t\t'"adjust lncli since ☂ needs a different command call
    --btcpay"$'\t\t'"adjust lncli for BTCPay Server Docker environment
+   --inactive"$'\t\t'"Show results for inactive channels only
    -h, --help"$'\t\t'"Show this help message
 "
 
@@ -34,6 +35,14 @@ elif [[ $# -gt 0 && $1 == "--btcpay" ]]; then
 else
     anchor_list="/usr/local/bin/lncli"
 fi
+
+# Parse command line argument for inactive filtering
+INACTIVE_ONLY=false
+for arg in "$@"; do
+    if [[ "$arg" == "--inactive" ]]; then
+        INACTIVE_ONLY=true
+    fi
+done
 
 get_channel_info() {
     local CHANNEL_INFO=$1
@@ -77,8 +86,7 @@ if [[ $1 == "--peer" ]]; then
 else
     # Check if --type option is provided
     if [[ $1 == "--type" ]]; then
-        if
-[[ $2 == "anchors" ]]; then
+        if [[ $2 == "anchors" ]]; then
             TYPE="ANCHORS"
         elif [[ $2 == "static" ]]; then
             TYPE="STATIC_REMOTE_KEY"
@@ -86,14 +94,27 @@ else
             echo "Invalid type: $2. Valid types are 'anchors' or 'static'."
             exit 1
         fi
-        LIMIT=$3
+        # Check if the next argument is a number (limit) or not
+        if [[ $3 =~ ^[0-9]+$ ]]; then
+            LIMIT=$3
+        else
+            LIMIT=""
+        fi
     else
         # If --limit is provided, set the limit
-        LIMIT=$2
+        if [[ $1 == "--limit" && $2 =~ ^[0-9]+$ ]]; then
+            LIMIT=$2
+        else
+            LIMIT=""
+        fi
     fi
 
     # Fetch and parse channel information
-    CHANNELS=$($anchor_list listchannels | jq -c '.channels | sort_by(.fee_per_kw | tonumber)[]')
+    if [ "$INACTIVE_ONLY" = true ]; then
+        CHANNELS=$($anchor_list listchannels --inactive_only | jq -c '.channels | sort_by(.fee_per_kw | tonumber)[]')
+    else
+        CHANNELS=$($anchor_list listchannels | jq -c '.channels | sort_by(.fee_per_kw | tonumber)[]')
+    fi
 
     # Loop through each channel and extract the pubkey and fee_per_kw values
     echo "Opener | Type | Commit "$'\t\t'" Alias "$'\t\t'" (Pubkey)"
@@ -104,7 +125,7 @@ else
         PUBKEY=$(echo "$line" | jq -r '.remote_pubkey')
         ALIAS=$(echo "$line" | jq -r '.peer_alias')
         ANCHOR=$(echo "$line" | jq -r '.commitment_type')
-	INITIATOR=$(echo "$line" | jq -r '.initiator')
+	    INITIATOR=$(echo "$line" | jq -r '.initiator')
 
         if [[ -n "$TYPE" && "$ANCHOR" != "$TYPE" ]]; then
             continue
@@ -130,8 +151,6 @@ else
             if [ "$SAT_VBYTE" -lt "$LIMIT" ]; then
                 # Print everything below filter limit
                 echo "$INITIATOR $ANCHOR_EMOJI $SAT_VBYTE sat/vb "$'\t'" $ALIAS ($PUBKEY)"
-            else
-                break
             fi
         fi
     done
