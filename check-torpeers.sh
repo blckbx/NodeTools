@@ -40,6 +40,9 @@ fi
 # define timeout of disconnecting and reconnecting to peers
 timeout_sec=20
 
+# Global switch for sending success messages, can become noisy otherwise
+SEND_VERBOSE_MESSAGES=false
+
 pushover() {
     msg=$(echo -e "✉️ check-torpeers\n$1")
     torify curl -s \
@@ -83,7 +86,9 @@ function attempt_switch_to_clearnet() {
                 if [[ -n "$current_address" && "$current_address" != *.onion* ]]; then
                     local success_msg="Successfully connected to $current_address for node https://amboss.space/node/$pubkey"
                     echo "$success_msg"
-                    pushover "$success_msg"
+                    if [ "$SEND_VERBOSE_MESSAGES" = true ]; then
+                        pushover "$success_msg"
+                    fi
                     return 0
                 elif [[ -z "$current_address" && $i -lt 3 ]]; then
                     echo "Retry #$(($i + 1))"
@@ -276,4 +281,6 @@ if ! $hybrid_on_tor; then
 fi
 
 # Reporting via Telegram
-pushover "$count_msg$noswitch_msg"
+if [ "$SEND_VERBOSE_MESSAGES" = true ]; then
+    pushover "$count_msg$noswitch_msg"
+fi
