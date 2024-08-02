@@ -41,7 +41,7 @@ fi
 timeout_sec=20
 
 # Global switch for sending success messages, can become noisy otherwise
-SEND_SUCCESS_MESSAGES=false
+SEND_VERBOSE_MESSAGES=false
 
 pushover() {
     msg=$(echo -e "✉️ check-torpeers\n$1")
@@ -86,7 +86,7 @@ function attempt_switch_to_clearnet() {
                 if [[ -n "$current_address" && "$current_address" != *.onion* ]]; then
                     local success_msg="Successfully connected to $current_address for node https://amboss.space/node/$pubkey"
                     echo "$success_msg"
-                    if [ "$SEND_SUCCESS_MESSAGES" = true ]; then
+                    if [ "$SEND_VERBOSE_MESSAGES" = true ]; then
                         pushover "$success_msg"
                     fi
                     return 0
@@ -281,4 +281,6 @@ if ! $hybrid_on_tor; then
 fi
 
 # Reporting via Telegram
-# pushover "$count_msg$noswitch_msg"
+if [ "$SEND_VERBOSE_MESSAGES" = true ]; then
+    pushover "$count_msg$noswitch_msg"
+fi
