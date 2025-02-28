@@ -108,7 +108,7 @@ blkdiff_limit=1
 
 # push message to TG bot
 pushover() {
-    msg=$(echo -e "ðŸš¨ healthmonitor\n$1")
+    msg=$(echo -e "🚨 healthmonitor\n$1")
     torify curl -s \
     -d parse_mode="HTML" \
     -d text="$msg" \
