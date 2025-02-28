@@ -17,12 +17,26 @@
 # version: 1.1
 # date: 2023-11-30
 
-# define lncli command - (un)comment which applies
-# bolt/blitz installation
+# Define lncli command for different installations
+# Bolt/Blitz installation
 [ -f ~/.bashrc ] && source ~/.bashrc
 [ -z "$_CMD_LNCLI" ] && _CMD_LNCLI=/usr/local/bin/lncli
-# umbrel
-# _CMD_LNCLI="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
+
+# Umbrel
+UMBREL_CMD="/home/umbrel/umbrel/scripts/app compose lightning exec -T lnd lncli"
+
+# BTC-Pay Server
+CONTAINER_NAME="btcpayserver_lnd_bitcoin"
+DOCKER_CMD="docker exec $CONTAINER_NAME lncli"
+
+# Determine which lncli command to use
+if [ -x "$(command -v lncli)" ]; then
+  _CMD_LNCLI=$(command -v lncli)
+elif docker ps --format '{{.Names}}' | grep -q "^$CONTAINER_NAME\$"; then
+  _CMD_LNCLI=$DOCKER_CMD
+else
+  _CMD_LNCLI=$UMBREL_CMD
+fi
 
 log_file="${0%.sh}.log"
 echo "Logging output to ${log_file}" 

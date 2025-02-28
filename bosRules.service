@@ -6,9 +6,9 @@
 # and https://github.com/alexbosworth/balanceofsatoshis#inbound-channel-rules
 # 
 # Explanation of settings below:
-# - capacity of requested channel > 10M sats
-# - CLEARNET: peer has a cleanet address
-# - NOT(OBSOLETE): channel has to be of type anchor
+# - capacity of a requested channel >= 10M sats
+# - CLEARNET: peer must have a clearnet address
+# - NOT(OBSOLETE): channel has to be of type anchors
 # - NOT(PUBLIC_KEY = 'x'): pubkey is not allowed to open channel to us
 # - coop-close-address(es): cycle through given addresses and add them as coop-close address to opening channels
 
