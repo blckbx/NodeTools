@@ -143,15 +143,18 @@ for peer in $peer_partners; do
 
     echo -n "Connected with $peer_alias through $peer_ip"
 
-    internal_addresses=($(echo "$node_info" | jq -r '.node.addresses[].addr'))
-    num_addresses=${#internal_addresses[@]}
-    onion_address=$(echo "${internal_addresses[@]}" | grep -c '.onion')
+    # Get and deduplicate internal addresses
+    all_internal_addresses=($(echo "$node_info" | jq -r '.node.addresses[].addr' | sort -u))
+    num_unique_addresses=${#all_internal_addresses[@]}
+    unique_onion_addresses=($(printf "%s\n" "${all_internal_addresses[@]}" | grep '.onion'))
+    unique_onion_count=${#unique_onion_addresses[@]}
+    unique_clearnet_count=$((num_unique_addresses - unique_onion_count))
 
     # Determine which kind of node - hybrid/clearnet only/tor only
-    if [[ $onion_address -gt 0 && $num_addresses -gt 1 ]]; then
+    if [[ $unique_onion_count -gt 0 && $unique_clearnet_count -gt 0 ]]; then
         ((hybrid_count++))
         echo " - Hybrid"
-    elif [[ $onion_address -gt 0 ]]; then
+    elif [[ $unique_onion_count -gt 0 ]]; then
         ((tor_only_count++))
         echo -n " - Tor only"
         # Check if the address is IPv4
@@ -166,11 +169,11 @@ for peer in $peer_partners; do
     fi
 
     # Check if peer partner is hybrid (must have both: onion and clearnet address)
-    if [[ "$peer_ip" == *.onion* && $num_addresses -gt 1 ]]; then
+    if [[ "$peer_ip" == *.onion* && $unique_onion_count -gt 0 && $unique_clearnet_count -gt 0 ]]; then
         hybrid_on_tor=true
         echo "First switching attempt using internal clearnet address from gossip"
 
-        if ! attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
+        if ! attempt_switch_to_clearnet "$peer_pubkey" "${all_internal_addresses[@]}"; then
             attempt_successful=false
 
             # In case of lagging gossip - Second attempt to switch to clearnet using mempool clearnet address
@@ -182,7 +185,7 @@ for peer in $peer_partners; do
             # Compare mempool_addresses with internal_addresses
             match_found=false
             for mempool_addr in "${mempool_addresses[@]}"; do
-                for internal_addr in "${internal_addresses[@]}"; do
+                for internal_addr in "${all_internal_addresses[@]}"; do
                     if [[ "$mempool_addr" == "$internal_addr" ]]; then
                         match_found=true
                         break 2 # Exit both loops
@@ -223,21 +226,26 @@ inactive_channels=$($_CMD_LNCLI listchannels --inactive_only --public_only | jq 
 for peer_pubkey in $inactive_channels; do
     node_info=$($_CMD_LNCLI getnodeinfo "$peer_pubkey")
     peer_alias=$(echo "$node_info" | jq -r '.node.alias')
-    internal_addresses=($(echo "$node_info" | jq -r '.node.addresses[].addr'))
-    num_addresses=${#internal_addresses[@]}
-    onion_address=$(echo "${internal_addresses[@]}" | grep -c '.onion')
+    # Get and deduplicate internal addresses
+    all_internal_addresses=($(echo "$node_info" | jq -r '.node.addresses[].addr' | sort -u))
+    num_unique_addresses=${#all_internal_addresses[@]}
+    unique_onion_addresses=($(printf "%s\n" "${all_internal_addresses[@]}" | grep '.onion'))
+    unique_onion_count=${#unique_onion_addresses[@]}
+    unique_clearnet_count=$((num_unique_addresses - unique_onion_count))
 
     echo -n "Inactive channel with $peer_alias"
 
     # Determine which kind of node - hybrid/clearnet only/tor only
-    if [[ $onion_address -gt 0 && $num_addresses -gt 1 ]]; then
+    if [[ $unique_onion_count -gt 0 && $unique_clearnet_count -gt 0 ]]; then
         ((hybrid_count++))
         echo " - Hybrid"
-    elif [[ $onion_address -gt 0 ]]; then
+    elif [[ $unique_onion_count -gt 0 ]]; then
         ((tor_only_count++))
         echo -n " - Tor only"
         # Check if the address is IPv4
-        if echo "$peer_ip" | grep -qP '^\d{1,3}(\.\d{1,3}){3}'; then
+        # (Note: peer_ip might be unset here as it's an inactive channel check, 
+        # but maintaining structure for consistency)
+        if [[ -n "$peer_ip" ]] && echo "$peer_ip" | grep -qP '^\d{1,3}(\.\d{1,3}){3}'; then
             ((tor_only_exit_clear_count++))
             echo -n " with clearnet exit"
         fi
@@ -248,7 +256,7 @@ for peer_pubkey in $inactive_channels; do
     fi
 
     echo "Reconnecting using internal addresses from gossip"
-    if ! attempt_switch_to_clearnet "$peer_pubkey" "${internal_addresses[@]}"; then
+    if ! attempt_switch_to_clearnet "$peer_pubkey" "${all_internal_addresses[@]}"; then
         echo "Reconnecting inactive channel failed"
         ((inactive_count++))
     else
