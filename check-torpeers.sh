@@ -12,6 +12,8 @@
 #          Order of switching attempt to Clearnet changed. First internal db,
 #          second external db (mempool) in case of lagging gossip propagation.
 #02/08/26: Optimized with parallel processing and IPv6 filtering.
+#07/31/26: Added IPv6 host capability check and persistent failure state
+#          backoff cooldown for unreachable hybrid peers.
 #Thanks to @blckbx and @weasel3 for contributions, debugging and hosting#
 #
 #use it via cronjob every 3h.
@@ -34,8 +36,29 @@ fi
 TIMEOUT_SEC=20
 MAX_PARALLEL_JOBS=10
 SEND_VERBOSE_MESSAGES=false
-SKIP_IPV6=true # Default to true to prevent connection errors on IPv4/Tor nodes
 DRY_RUN=${DRY_RUN:-false} # Set to true to skip actual connect/disconnect commands
+
+# Noise mitigation constants
+MAX_FAILURES=3
+SKIP_INTERVAL=10
+STATE_FILE="$script_path/.check-torpeers-state.json"
+
+# Auto-detect IPv6 capability if SKIP_IPV6 is not explicitly pre-set
+has_global_ipv6() {
+    if ip -6 addr show scope global 2>/dev/null | grep -q "inet6"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+if [ -z "$SKIP_IPV6" ]; then
+    if has_global_ipv6; then
+        SKIP_IPV6=false
+    else
+        SKIP_IPV6=true
+    fi
+fi
 
 # Temporary directory for job results
 TMP_DIR=$(mktemp -d /tmp/check-torpeers.XXXXXX)
@@ -60,6 +83,63 @@ is_ipv6() {
         return 0
     fi
     return 1
+}
+
+init_state_file() {
+    if [ ! -f "$STATE_FILE" ]; then
+        echo '{"peers":{}}' > "$STATE_FILE"
+    fi
+}
+
+get_peer_fail_count() {
+    local pubkey="$1"
+    init_state_file
+    if [ -f "$STATE_FILE" ]; then
+        jq -r --arg pubkey "$pubkey" '.peers[$pubkey].fail_count // 0' "$STATE_FILE" 2>/dev/null
+    else
+        echo "0"
+    fi
+}
+
+get_peer_check_count() {
+    local pubkey="$1"
+    init_state_file
+    if [ -f "$STATE_FILE" ]; then
+        jq -r --arg pubkey "$pubkey" '.peers[$pubkey].check_count // 0' "$STATE_FILE" 2>/dev/null
+    else
+        echo "0"
+    fi
+}
+
+update_peer_state() {
+    local pubkey="$1"
+    local fail_count="$2"
+    local check_count="$3"
+    init_state_file
+    local tmp_file="${STATE_FILE}.tmp.$$"
+    if jq --arg pubkey "$pubkey" \
+          --argjson fc "$fail_count" \
+          --argjson cc "$check_count" \
+          --arg last_update "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+          '.peers[$pubkey] = {"fail_count": $fc, "check_count": $cc, "last_update": $last_update}' \
+          "$STATE_FILE" > "$tmp_file" 2>/dev/null; then
+        mv "$tmp_file" "$STATE_FILE"
+    else
+        rm -f "$tmp_file"
+    fi
+}
+
+reset_peer_state() {
+    local pubkey="$1"
+    init_state_file
+    if [ -f "$STATE_FILE" ]; then
+        local tmp_file="${STATE_FILE}.tmp.$$"
+        if jq --arg pubkey "$pubkey" 'del(.peers[$pubkey])' "$STATE_FILE" > "$tmp_file" 2>/dev/null; then
+            mv "$tmp_file" "$STATE_FILE"
+        else
+            rm -f "$tmp_file"
+        fi
+    fi
 }
 
 # --- Core Logic Functions ---
@@ -164,9 +244,28 @@ process_peer() {
     
     local switched=false
     if [[ "$type" == "Hybrid" && "$current_ip" == *.onion* ]]; then
+        local fail_count
+        fail_count=$(get_peer_fail_count "$pubkey")
+        local check_count
+        check_count=$(get_peer_check_count "$pubkey")
+
+        if [ "$fail_count" -ge "$MAX_FAILURES" ]; then
+            local new_check_count=$((check_count + 1))
+            if [ $((new_check_count % SKIP_INTERVAL)) -ne 0 ]; then
+                echo "Skipping clearnet switch attempt for $alias ($pubkey): in cooldown after $fail_count failures (check $new_check_count/$SKIP_INTERVAL)" >&2
+                update_peer_state "$pubkey" "$fail_count" "$new_check_count"
+                echo "RESULT:PEER:$pubkey:$type:false:$exit_clear" > "$TMP_DIR/job_$job_id"
+                return
+            else
+                echo "Cooldown period reached for $alias ($pubkey). Performing 1-in-$SKIP_INTERVAL retry (check $new_check_count/$SKIP_INTERVAL)" >&2
+                check_count=$new_check_count
+            fi
+        fi
+
         echo "Switching attempt for $alias ($pubkey)" >&2
         if attempt_switch_to_clearnet "$pubkey" "${addresses[*]}" "$current_ip"; then
             switched=true
+            reset_peer_state "$pubkey"
         else
             # Second attempt via mempool
             local mempool_sockets
@@ -186,14 +285,21 @@ process_peer() {
                     echo "Mempool attempt for $alias ($pubkey)" >&2
                     if attempt_switch_to_clearnet "$pubkey" "${unique_mempool[*]}" "$current_ip"; then
                         switched=true
+                        reset_peer_state "$pubkey"
                     fi
                 fi
             fi
         fi
         
         if [ "$switched" = false ]; then
-            pushover "Failed to switch to clearnet for hybrid node $alias (https://amboss.space/node/$pubkey)"
+            local new_fail_count=$((fail_count + 1))
+            update_peer_state "$pubkey" "$new_fail_count" 0
+            if [ "$new_fail_count" -le "$MAX_FAILURES" ] || [ $((check_count % SKIP_INTERVAL)) -eq 0 ]; then
+                pushover "Failed to switch to clearnet for hybrid node $alias (https://amboss.space/node/$pubkey) (Fail count: $new_fail_count)"
+            fi
         fi
+    else
+        reset_peer_state "$pubkey"
     fi
     
     echo "RESULT:PEER:$pubkey:$type:$switched:$exit_clear" > "$TMP_DIR/job_$job_id"
